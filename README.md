@@ -17,7 +17,7 @@ https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json
 ## Demo
 
 The dice are rolled secretly in the background ensuring only your desired result is shown to the players.
-Sometimes, if your formula or desire result are to extreme, `(like 10d100 = 10)`, it will take too many attempts to roll the result and you'll be privately be messaged a failure alert. `Max attempts is currently set to 3000 tries`
+Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)`, it will take too many attempts to roll the result and you'll be privately be messaged a failure alert. `Max attempts is currently set to 3000 tries`
 
 <img width="1213" alt="image" src="https://github.com/Lefteous/loaded-dice-roll/assets/24902317/be62241f-76ab-4956-8847-1e8fc086f9e4">
 
