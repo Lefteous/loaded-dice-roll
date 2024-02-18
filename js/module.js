@@ -58,11 +58,13 @@ const parseTarget = (target) => {
 const parseDialogDoc = (doc) => {
   try {
     const formula = doc.find("input[name='formula']").val();
+    const firstNumberMatch = formula.match(/\d+/); // Find first number in the formula
+    const firstNumber = firstNumberMatch ? parseInt(firstNumberMatch[0], 10) : null; // Parse it
     const target = parseTarget(doc.find("input[name='target']").val());
-    return { formula, target };
+    return { formula, target, firstNumber }; // Include firstNumber in the return value
   } catch (e) {
     console.error(e);
-    return { formula: undefined, target: undefined };
+    return { formula: undefined, target: undefined, firstNumber: null };
   }
 };
 
@@ -84,7 +86,7 @@ const evaluateTotalVsTarget = (total, target) => {
 };
 
 const onSubmit = async (doc) => {
-  const { formula, target } = parseDialogDoc(doc);
+  const { formula, target, firstNumber } = parseDialogDoc(doc);
   if (!formula) {
     whisperError("Missing Formula");
     return;
@@ -92,6 +94,12 @@ const onSubmit = async (doc) => {
   if (!target || !target.condition) {
     whisperError("Invalid Target Format");
     return;
+  }
+
+  // Adjust target based on first number in the formula
+  if (firstNumber !== null && target.value < firstNumber) {
+    console.log(`Adjusting target from ${target.value} to ${firstNumber} based on formula's first number.`);
+    target.value = firstNumber;
   }
 
   try {
