@@ -1,51 +1,55 @@
-const MAX_ATTEMPTS = 3000;
+// Hooks.once is used to perform initialization tasks when the module is loaded.
+Hooks.once('init', () => {
+  // Register a new game setting for 'maxAttempts' allowing users to specify their own maximum dice roll attempts.
+  game.settings.register('loaded-dice-roll', 'maxAttempts', {
+    name: 'Max Attempts', // The name displayed in the settings menu.
+    hint: 'The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your foundry.', // Additional description for the setting.
+    scope: 'world', // Scope indicates that this setting is stored and applies on a per-world basis.
+    config: true, // Config indicates that this setting appears in the Configure Settings menu.
+    type: Number, // The type of the setting, in this case, a number.
+    default: 100000, // The default value for the setting if not specified by the user.
+    onChange: value => console.log(`Max Attempts changed to: ${value}`) // Optional function to call when the setting is changed.
+  });
+});
+
+// Regular expression to parse the target format from user input.
 const TARGET_FORMAT = /([^\d]*)[\s]*([\d]+)/;
 
+// Function to log errors to the console and create a whisper message to the user.
 const whisperError = (error) => {
   console.error(`Foundry VTT | Loaded Dice Roll | ${error}`);
-  // Ensure ChatMessage.create is used correctly according to the latest API.
   ChatMessage.create({
-    user: game.user.id, // Updated to "id" from "_id" as per the newer API conventions.
-    whisper: [game.user.id], // Same here.
+    user: game.user.id,
+    whisper: [game.user.id],
     flavor: "Loaded Dice Roll",
     content: `<div>Error: ${error}</div>`
   });
 };
 
+// Parses the target string to extract the condition and value.
 const parseTarget = (target) => {
   const match = target.match(TARGET_FORMAT);
-  if (match) { // Ensure match is not null before accessing it.
+  if (match) {
     const condition = match[1].trim();
-    const value = parseInt(match[2].trim());
+    const value = parseInt(match[2].trim(), 10);
     switch (condition) {
-      case "lt":
-      case "<":
-        return { condition: "lt", value };
-      case "lte":
-      case "<=":
-        return { condition: "lte", value };
-      case "gt":
-      case ">":
-        return { condition: "gt", value };
-      case "gte":
-      case ">=":
-        return { condition: "gte", value };
-      case "":
-      case "eq":
-      case "=":
-      case "==":
-      case "===":
-        return { condition: "eq", value };
+      case "lt": case "<":
+      case "lte": case "<=":
+      case "gt": case ">":
+      case "gte": case ">=":
+      case "": case "eq": case "=": case "==": case "===":
+        return { condition, value };
       default:
         return undefined;
     };
   }
-  return undefined; // Return undefined if match fails.
+  return undefined;
 };
 
+// Parses the dialog document to extract the formula and target from user input.
 const parseDialogDoc = (doc) => {
   try {
-    const formula = doc.find("input[name='formula']").val(); // Use val() for jQuery objects.
+    const formula = doc.find("input[name='formula']").val();
     const target = parseTarget(doc.find("input[name='target']").val());
     return { formula, target };
   } catch (e) {
@@ -54,59 +58,52 @@ const parseDialogDoc = (doc) => {
   }
 };
 
+// Evaluates the total of the dice roll against the target condition and value.
 const evaluateTotalVsTarget = (total, target) => {
   switch (target.condition) {
-    case "eq":
-      return total === target.value;
-    case "gt":
-      return total > target.value;
-    case "gte":
-      return total >= target.value;
-    case "lt":
-      return total < target.value;
-    case "lte":
-      return total <= target.value;
-    default:
-      return false; // Ensure there's a default return for safety.
+    case "eq": return total === target.value;
+    case "gt": return total > target.value;
+    case "gte": return total >= target.value;
+    case "lt": return total < target.value;
+    case "lte": return total <= target.value;
+    default: return false;
   }
 };
 
+// Main function to handle the submission of the roll dialog.
 const onSubmit = async (doc) => {
   const { formula, target } = parseDialogDoc(doc);
-  if (!formula) {
-    whisperError("Missing Formula");
-    return;
-  }
-  if (!target || !target.condition) {
-    whisperError("Invalid Target Format");
+  if (!formula || !target || !target.condition) {
+    whisperError("Missing Formula or Invalid Target Format");
     return;
   }
 
   try {
-    new Roll(formula).roll(); // Validate formula by attempting to create a Roll object.
+    new Roll(formula).roll();
   } catch (e) {
     console.error(e);
     whisperError("Invalid Formula");
     return;
   }
 
+  const MAX_ATTEMPTS = game.settings.get('loaded-dice-roll', 'maxAttempts');
+
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const dice = new Roll(formula);
-    await dice.roll(); // Roll method is async, ensure we await it.
-    const total = dice.total;
-    if (evaluateTotalVsTarget(total, target)) {
+    await dice.roll();
+    if (evaluateTotalVsTarget(dice.total, target)) {
       dice.toMessage({
-        speaker: ChatMessage.getSpeaker({actor: game.user.character}) // Ensure correct speaker retrieval.
-      }, {
-        rollMode: game.settings.get("core", "rollMode") // Use global rollMode setting.
+        speaker: ChatMessage.getSpeaker({actor: game.user.character}),
+        rollMode: game.settings.get("core", "rollMode")
       });
-      console.log(`Foundry VTT | Loaded Dice Roll | Cheated in ${i + 1} attempts.`);
+      console.log(`Foundry VTT | Loaded Dice Roll | Success in ${i + 1} attempts.`);
       return;
     }
   }
   whisperError("Max Attempts Reached");
 };
 
+// Function to show the dice roll dialog.
 const showDialog = async () => {
   const html = await renderTemplate("/modules/loaded-dice-roll/template/module.html");
   return new Promise((resolve) => {
@@ -116,27 +113,22 @@ const showDialog = async () => {
       buttons: {
         roll: {
           label: "Roll",
-          callback: async (html) => { // Change 'input' to 'html' for clarity.
-            resolve(await onSubmit(html));
-          }
+          callback: async (html) => resolve(await onSubmit(html))
         }
       },
       default: "roll",
       close: () => resolve(null),
-      render: (html) => {
-        html.find("input[name='formula']").focus(); // Ensure correct focus.
-      }
+      render: (html) => html.find("input[name='formula']").focus()
     }).render(true);
   });
 };
 
+// Adds a button to the Foundry VTT UI for the Loaded Dice Roll feature (GM only).
 Hooks.on("getSceneControlButtons", (controls) => {
-  if (!game.user.isGM) {
-    return;
-  }
+  if (!game.user.isGM) return;
 
-  const bar = controls.find((c) => c.name === "token");
-  if (bar) { // Check if bar is found to avoid errors.
+  const bar = controls.find(c => c.name === "token");
+  if (bar) {
     bar.tools.push({
       name: "loaded-dice-roll",
       title: "Loaded Dice Roll",
