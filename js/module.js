@@ -1,12 +1,22 @@
-const MAX_ATTEMPTS = 3000;
+Hooks.once('init', () => {
+  game.settings.register('loaded-dice-roll', 'maxAttempts', {
+    name: 'Max Attempts',
+    hint: 'The maximum number of attempts for rolling dice.',
+    scope: 'world',
+    config: true,
+    type: Number,
+    default: 100000,
+    onChange: value => console.log(`Max Attempts changed to: ${value}`)
+  });
+});
+
 const TARGET_FORMAT = /([^\d]*)[\s]*([\d]+)/;
 
 const whisperError = (error) => {
   console.error(`Foundry VTT | Loaded Dice Roll | ${error}`);
-  // Ensure ChatMessage.create is used correctly according to the latest API.
   ChatMessage.create({
-    user: game.user.id, // Updated to "id" from "_id" as per the newer API conventions.
-    whisper: [game.user.id], // Same here.
+    user: game.user.id,
+    whisper: [game.user.id],
     flavor: "Loaded Dice Roll",
     content: `<div>Error: ${error}</div>`
   });
@@ -14,7 +24,7 @@ const whisperError = (error) => {
 
 const parseTarget = (target) => {
   const match = target.match(TARGET_FORMAT);
-  if (match) { // Ensure match is not null before accessing it.
+  if (match) {
     const condition = match[1].trim();
     const value = parseInt(match[2].trim());
     switch (condition) {
@@ -40,12 +50,12 @@ const parseTarget = (target) => {
         return undefined;
     };
   }
-  return undefined; // Return undefined if match fails.
+  return undefined;
 };
 
 const parseDialogDoc = (doc) => {
   try {
-    const formula = doc.find("input[name='formula']").val(); // Use val() for jQuery objects.
+    const formula = doc.find("input[name='formula']").val();
     const target = parseTarget(doc.find("input[name='target']").val());
     return { formula, target };
   } catch (e) {
@@ -67,7 +77,7 @@ const evaluateTotalVsTarget = (total, target) => {
     case "lte":
       return total <= target.value;
     default:
-      return false; // Ensure there's a default return for safety.
+      return false;
   }
 };
 
@@ -83,22 +93,24 @@ const onSubmit = async (doc) => {
   }
 
   try {
-    new Roll(formula).roll(); // Validate formula by attempting to create a Roll object.
+    new Roll(formula).roll();
   } catch (e) {
     console.error(e);
     whisperError("Invalid Formula");
     return;
   }
 
+  const MAX_ATTEMPTS = game.settings.get('loaded-dice-roll', 'maxAttempts');
+
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const dice = new Roll(formula);
-    await dice.roll(); // Roll method is async, ensure we await it.
+    await dice.roll();
     const total = dice.total;
     if (evaluateTotalVsTarget(total, target)) {
       dice.toMessage({
-        speaker: ChatMessage.getSpeaker({actor: game.user.character}) // Ensure correct speaker retrieval.
+        speaker: ChatMessage.getSpeaker({actor: game.user.character})
       }, {
-        rollMode: game.settings.get("core", "rollMode") // Use global rollMode setting.
+        rollMode: game.settings.get("core", "rollMode")
       });
       console.log(`Foundry VTT | Loaded Dice Roll | Cheated in ${i + 1} attempts.`);
       return;
@@ -116,7 +128,7 @@ const showDialog = async () => {
       buttons: {
         roll: {
           label: "Roll",
-          callback: async (html) => { // Change 'input' to 'html' for clarity.
+          callback: async (html) => {
             resolve(await onSubmit(html));
           }
         }
@@ -124,7 +136,7 @@ const showDialog = async () => {
       default: "roll",
       close: () => resolve(null),
       render: (html) => {
-        html.find("input[name='formula']").focus(); // Ensure correct focus.
+        html.find("input[name='formula']").focus();
       }
     }).render(true);
   });
@@ -136,7 +148,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
   }
 
   const bar = controls.find((c) => c.name === "token");
-  if (bar) { // Check if bar is found to avoid errors.
+  if (bar) {
     bar.tools.push({
       name: "loaded-dice-roll",
       title: "Loaded Dice Roll",
