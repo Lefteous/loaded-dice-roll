@@ -10,7 +10,9 @@ Eventually due to their own perception or a perception check, hopefully, they'll
 ## Installation
 Currently install manually with this Manifest URL:
 
-`https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json`
+```
+https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json
+```
 
 ## Demo
 
