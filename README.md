@@ -18,8 +18,12 @@ The dice are rolled secretly in the background ensuring only your desired result
 Sometimes, if your formula or desire result are to extreme, `(like 10d100 = 10)`, it will take too many attempts to roll the result and you'll be privately be messaged a failure alert. `Max attempts is currently set to 3000 tries`
 
 Example of a formula targetting the number 7:
+![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/31d79097-9d17-4139-9ede-edb357826d25)
+![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/365180e9-ae25-4ea5-839e-a2148fc9d5dc)
 
 
 
 Example of a formula targetting a range of numbers greater than 10:
+![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/fee15caa-29e0-4ee3-9dcc-4abe7d1b97f6)
+![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/7106704e-3a78-4db1-8acd-4580306960f9)
 
