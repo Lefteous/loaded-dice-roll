@@ -1,0 +1,16 @@
+{
+  "name": "loaded-dice-roll",
+  "title": "Loaded Dice Roll",
+  "description": "Loaded your dice rolls!",
+  "author": "lefteous",
+  "url": "https://github.com/lefteous/loaded-dice-roll",
+  "manifest": "https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json",
+  "download": "https://github.com/lefteous/loaded-dice-roll/archive/v1.0.0.zip",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "11.0",
+    "verified": "11.0",
+    "maximum": "11.999"
+  },
+  "esmodules": ["js/module.js"]
+}
