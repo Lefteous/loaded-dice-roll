@@ -8,7 +8,11 @@ The reason I made this module is so that I can "rig" dice games against my playe
 Eventually due to their own perception or a perception check, hopefully, they'll notice the dice are always rolling in favor of the house. 
 
 ## Installation
-Currently install manually with this Manifest URL:
+This module can be installed directly through FoundryVTT:
+
+[https://foundryvtt.com/packages/loaded-dice-roll](https://foundryvtt.com/packages/loaded-dice-roll)
+
+You can also install manually with this Manifest URL:
 
 ```
 https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json
@@ -17,7 +21,7 @@ https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json
 ## Demo
 
 The dice are rolled secretly in the background ensuring only your desired result is shown to the players.
-Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)`, it will take too many attempts to roll the result and you'll be privately be messaged a failure alert. `Max attempts are set to 100,000 by default but can be changed in the setting configuration.`
+Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)`, it will take too many attempts to roll the result and you'll be privately be messaged a failure alert. `Max attempts are set to 100,000 by default but can be changed in the configuration settings.`
 
 <img width="1213" alt="image" src="https://github.com/Lefteous/loaded-dice-roll/assets/24902317/be62241f-76ab-4956-8847-1e8fc086f9e4">
 
