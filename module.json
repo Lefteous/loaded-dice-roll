@@ -5,8 +5,8 @@
   "author": "lefteous",
   "url": "https://github.com/lefteous/loaded-dice-roll",
   "manifest": "https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json",
-  "download": "https://github.com/Lefteous/loaded-dice-roll/archive/v1.0.1.zip",
-  "version": "1.0.1",
+  "download": "https://github.com/Lefteous/loaded-dice-roll/archive/v1.0.2.zip",
+  "version": "1.0.2",
   "compatibility": {
     "minimum": "11.0",
     "verified": "11.0",
