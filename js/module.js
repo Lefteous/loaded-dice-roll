@@ -1,7 +1,7 @@
 Hooks.once('init', () => {
   game.settings.register('loaded-dice-roll', 'maxAttempts', {
     name: 'Max Attempts',
-    hint: 'The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your foundry.',
+    hint: 'The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.',
     scope: 'world',
     config: true,
     type: Number,
@@ -9,7 +9,29 @@ Hooks.once('init', () => {
     onChange: value => console.log(`Max Attempts changed to: ${value}`)
   });
 
-  // Additional initialization code as needed...
+  // Expose a global function for macros
+  game.loadedDiceRoll = {
+    showDialog,
+    rollDice: async (formula, targetString) => {
+      const target = parseTarget(targetString);
+      if (!formula || !target || !target.condition) {
+        console.error("Invalid formula or target for loaded dice roll.");
+        whisperError("Invalid formula or target.");
+        return;
+      }
+
+      const firstNumberMatch = formula.match(/\d+/); // Find first number in the formula
+      const firstNumber = firstNumberMatch ? parseInt(firstNumberMatch[0], 10) : null; // Parse it
+
+      // Adjust target based on first number in the formula
+      if (firstNumber !== null && target.value < firstNumber) {
+        console.log(`Adjusting target from ${target.value} to ${firstNumber} based on formula's first number.`);
+        target.value = firstNumber;
+      }
+
+      onSubmit({ formula, target });
+    }
+  };
 });
 
 const TARGET_FORMAT = /([^\d]*)[\s]*([\d]+)/;
@@ -83,8 +105,7 @@ const evaluateTotalVsTarget = (total, target) => {
   }
 };
 
-const onSubmit = async (doc) => {
-  const { formula, target } = parseDialogDoc(doc);
+const onSubmit = async ({ formula, target }) => {
   if (!formula) {
     whisperError("Missing Formula");
     return;
@@ -114,7 +135,7 @@ const onSubmit = async (doc) => {
       }, {
         rollMode: game.settings.get("core", "rollMode")
       });
-      console.log(`Foundry VTT | Loaded Dice Roll | Cheated in ${i + 1} attempts.`);
+      console.log(`Foundry VTT | Loaded Dice Roll | Succeeded in ${i + 1} attempts.`);
       return;
     }
   }
@@ -131,7 +152,8 @@ const showDialog = async () => {
         roll: {
           label: "Roll",
           callback: async (html) => {
-            resolve(await onSubmit(html));
+            const doc = parseDialogDoc($(html));
+            resolve(await onSubmit(doc));
           }
         }
       },
