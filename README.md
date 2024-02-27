@@ -19,7 +19,6 @@ https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json
 ```
 
 ## Demo
-
 The dice are rolled secretly in the background ensuring only your desired result is shown to the players.
 Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)`, it will take too many attempts to roll the result and you'll be privately be messaged a failure alert. `Max attempts are set to 100,000 by default but can be changed in the configuration settings.`
 
@@ -36,3 +35,37 @@ Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)
 ![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/fee15caa-29e0-4ee3-9dcc-4abe7d1b97f6)
 ![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/7106704e-3a78-4db1-8acd-4580306960f9)
 
+### Formulas 
+Below are the options you can use for your dice loading.
+
+```
++
+-
+*
+/
+
+=, ==, ===, eq
+>, gt
+>=, gte
+<, lt
+<=, lte
+```
+
+### Macros
+The loaded dice can now be used in FoundryVTT Macros.
+
+You can open the dialog via macro using the following code
+
+```
+game.loadedDiceRoll.showDialog();
+```
+
+You can also set macros to roll specified loaded dice like in the following examples.
+
+```
+game.loadedDiceRoll.rollDice("2d6", "7");
+```
+
+```
+game.loadedDiceRoll.rollDice("1d20+5", ">=15");
+```
