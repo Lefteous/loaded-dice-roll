@@ -39,7 +39,7 @@ Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)
 Below are the options you can use for your dice loading.
 The **Formula Operators** are used for making the dice formula that you want to have rolled `(like 2d10+10)`.
 The **Target Operators** are used for making the desired end result of your loaded dice `(like >14)`. 
-Target Operators have text variants as well. For example `>` and `gt` are both for `greater than`.
+Target Operators have letter variants as well. For example `>` and `gt` are both for `greater than`.
 
 ```
 Formula Operators:
