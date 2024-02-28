@@ -35,15 +35,20 @@ Sometimes, if your formula or desire result are too extreme, `(like 10d100 = 10)
 ![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/fee15caa-29e0-4ee3-9dcc-4abe7d1b97f6)
 ![image](https://github.com/Lefteous/loaded-dice-roll/assets/24902317/7106704e-3a78-4db1-8acd-4580306960f9)
 
-### Formulas 
+### Operators 
 Below are the options you can use for your dice loading.
+The **Formula Operators** are used for making the dice formula that you want to have rolled `(like 2d10+10)`.
+The **Target Operators** are used for making the desired end result of your loaded dice `(like >14)`. 
+Target Operators have text variants as well. For example `>` and `gt` are both for `greater than`.
 
 ```
+Formula Operators:
 +
 -
 *
 /
 
+Target Operators:
 =, ==, ===, eq
 >, gt
 >=, gte
