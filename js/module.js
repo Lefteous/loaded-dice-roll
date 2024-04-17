@@ -14,7 +14,7 @@ Hooks.once('init', () => {
     showDialog,
     rollDice: async (formula, targetString) => {
       const target = parseTarget(targetString);
-      if (!formula || !target || !target.condition) {
+      if (!formula || !target?.condition) {
         console.error("Invalid formula or target for loaded dice roll.");
         whisperError("Invalid formula or target.");
         return;
@@ -110,7 +110,7 @@ const onSubmit = async ({ formula, target }) => {
     whisperError("Missing Formula");
     return;
   }
-  if (!target || !target.condition) {
+  if (!target?.condition) {
     whisperError("Invalid Target Format");
     return;
   }
