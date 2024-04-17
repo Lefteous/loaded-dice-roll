@@ -186,7 +186,7 @@ describe("module", () => {
 
       expect(isTargetValid("2d6", { condition: "eq", value: 25 })).toBe(true);
     });
-    it("Assure EQ 25 falls inside of 1-5", () => {
+    it("Assure EQ 25 falls outside of 1-5", () => {
       rollSpy.mockImplementationOnce(() => {
         return {
           evaluate: () => {
