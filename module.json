@@ -12,5 +12,6 @@
     "verified": "11.0",
     "maximum": "11.999"
   },
-  "esmodules": ["js/module.js"]
+  "esmodules": ["js/module.js"],
+  "styles": ["css/styles.css"]
 }
