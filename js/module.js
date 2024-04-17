@@ -1,3 +1,4 @@
+import { isTargetValid, parseTarget, evaluateTotalVsTarget } from "./utils.js";
 let loadedDialog = null;
 
 const whisperError = (error) => {
@@ -6,15 +7,9 @@ const whisperError = (error) => {
     user: game.user.id,
     whisper: [game.user.id],
     flavor: "Loaded Dice Roll",
-    content: `<div>Error: ${error}</div>`
+    content: `<div>Error: ${error}</div>`,
   });
 };
-
-const isTargetValid = (formula, target) => {
-  const rollMinimum = new Roll(formula).evaluate({minimize:true, async:false}).total;
-  const rollMaximum = new Roll(formula).evaluate({maximize:true, async:false}).total;
-  return target >= rollMinimum && target <= rollMaximum;
-}
 
 const showDialog = () => {
   if (loadedDialog?.rendered) {
@@ -23,7 +18,7 @@ const showDialog = () => {
     loadedDialog = new LoadedDialog();
     loadedDialog.render(true);
   }
-}
+};
 
 /** Dialog **/
 
@@ -32,18 +27,18 @@ export class LoadedDialog extends FormApplication {
     super();
     this.errors = {
       formula: "",
-      target: ""
-    }
+      target: "",
+    };
     this.values = {
       formula: "",
-      target: ""
-    }
+      target: "",
+    };
   }
 
   getData(options) {
     return mergeObject(super.getData(options), {
       values: this.values,
-      errors: this.errors
+      errors: this.errors,
     });
   }
 
@@ -55,7 +50,7 @@ export class LoadedDialog extends FormApplication {
       height: "auto",
       closeOnSubmit: false,
       submitOnChange: false,
-      submitOnClose: false
+      submitOnClose: false,
     });
   }
 
@@ -71,43 +66,45 @@ export class LoadedDialog extends FormApplication {
 
     this.errors = {
       formula: "",
-      target: ""
-    }
+      target: "",
+    };
     this.values = {
       formula,
-      target
-    }
+      target,
+    };
     if (!formula) {
       this.errors.formula = "Missing Formula";
     }
-  
+
     if (!target) {
       this.errors.target = "Missing Target";
     }
 
-    if (target && !Number.isInteger(parseFloat(target))) {
+    const parsedTarget = parseTarget(target);
+
+    if (!parsedTarget) {
       this.errors.target = "Target must be an integer";
     }
-  
+
     if (this.errors.formula || this.errors.target) {
       loadedDialog.render(true);
       return;
     }
-  
+
     if (!Roll.validate(formula)) {
       this.errors.formula = "Invalid Formula";
     }
-  
-    if (!isTargetValid(formula, target)) {
+
+    if (!isTargetValid(formula, parsedTarget)) {
       this.errors.target = "The Target is outside the range of the Formula.";
     }
-  
+
     if (this.errors.formula || this.errors.target) {
       loadedDialog.render(true);
       return;
     }
-  
-    const result = await calculateRoll(formula, target);
+
+    const result = await calculateRoll(formula, parsedTarget);
 
     if (!result) {
       whisperError("Max Attempts Reached");
@@ -115,18 +112,21 @@ export class LoadedDialog extends FormApplication {
   }
 }
 
-const calculateRoll = async (formula, target) => {
-  const MAX_ATTEMPTS = game.settings.get('loaded-dice-roll', 'maxAttempts');
+const calculateRoll = async (formula, parsedTarget) => {
+  const MAX_ATTEMPTS = game.settings.get("loaded-dice-roll", "maxAttempts");
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const dice = new Roll(formula);
     await dice.roll();
     const total = dice.total;
-    if (total === Number.parseInt(target)) {
-      dice.toMessage({
-        speaker: ChatMessage.getSpeaker({actor: game.user.character})
-      }, {
-        rollMode: game.settings.get("core", "rollMode")
-      });
+    if (evaluateTotalVsTarget(total, parsedTarget)) {
+      dice.toMessage(
+        {
+          speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
+        },
+        {
+          rollMode: game.settings.get("core", "rollMode"),
+        },
+      );
       console.log(`Foundry VTT | Loaded Dice Roll | Succeeded in ${i + 1} attempts.`);
       if (loadedDialog?.rendered) {
         loadedDialog.close();
@@ -135,19 +135,19 @@ const calculateRoll = async (formula, target) => {
     }
   }
   return false;
-}
+};
 
 /** Hooks **/
 
-Hooks.once('init', () => {
-  game.settings.register('loaded-dice-roll', 'maxAttempts', {
-    name: 'Max Attempts',
-    hint: 'The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.',
-    scope: 'world',
+Hooks.once("init", () => {
+  game.settings.register("loaded-dice-roll", "maxAttempts", {
+    name: "Max Attempts",
+    hint: "The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.",
+    scope: "world",
     config: true,
     type: Number,
     default: 100000,
-    onChange: value => console.log(`Max Attempts changed to: ${value}`)
+    onChange: (value) => console.log(`Max Attempts changed to: ${value}`),
   });
 
   // Expose a global function for macros
@@ -172,7 +172,7 @@ Hooks.once('init', () => {
       }
 
       await calculateRoll(formula, target);
-    }
+    },
   };
 });
 
@@ -188,7 +188,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
       title: "Loaded Dice Roll",
       icon: "fas fa-dice",
       onClick: () => showDialog(),
-      button: true
+      button: true,
     });
   }
 });

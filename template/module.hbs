@@ -1,14 +1,14 @@
 <form>
   <div class="form-group">
-  <label for="formula">Loaded Roll Formula</label>
-  <input type="text" name="formula" id="formula" placeholder="Example: 2d6" value="{{values.formula}}" />
+    <label for="formula">Loaded Roll Formula</label>
+    <input type="text" name="formula" id="formula" placeholder="Example: 2d6" value="{{values.formula}}" />
   </div>
   {{#if errors.formula}}
     <div class="form-error">{{errors.formula}}</div>
   {{/if}}
   <div class="form-group">
-  <label for="target">Loaded Roll Target</label>
-  <input type="number" name="target" id="target" placeholder="7" value="{{values.target}}" />
+    <label for="target">Loaded Roll Target</label>
+    <input type="text" name="target" id="target" placeholder="7" value="{{values.target}}" />
   </div>
   {{#if errors.target}}
     <div class="form-error">{{errors.target}}</div>
