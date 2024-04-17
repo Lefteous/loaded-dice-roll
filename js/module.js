@@ -88,6 +88,12 @@ const parseDialogDoc = (doc) => {
   }
 };
 
+const isTargetValid = (formula, target) => {
+  const rollMinimum = new Roll(formula).evaluate({minimize:true, async:false}).total;
+  const rollMaximum = new Roll(formula).evaluate({maximize:true, async:false}).total;
+  return target >= rollMinimum && target <= rollMaximum;
+}
+
 const evaluateTotalVsTarget = (total, target) => {
   switch (target.condition) {
     case "eq":
@@ -120,6 +126,11 @@ const onSubmit = async ({ formula, target }) => {
   } catch (e) {
     console.error(e);
     whisperError("Invalid Formula");
+    return;
+  }
+
+  if (!isTargetValid(formula, target.value)) {
+    whisperError("The Target is outside the range of the Formula.");
     return;
   }
 
