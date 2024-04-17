@@ -121,10 +121,7 @@ const onSubmit = async ({ formula, target }) => {
     return;
   }
 
-  try {
-    new Roll(formula).roll();
-  } catch (e) {
-    console.error(e);
+  if (!Roll.validate(formula)) {
     whisperError("Invalid Formula");
     return;
   }
