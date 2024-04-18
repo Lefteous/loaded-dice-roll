@@ -1,40 +1,5 @@
-Hooks.once('init', () => {
-  game.settings.register('loaded-dice-roll', 'maxAttempts', {
-    name: 'Max Attempts',
-    hint: 'The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.',
-    scope: 'world',
-    config: true,
-    type: Number,
-    default: 100000,
-    onChange: value => console.log(`Max Attempts changed to: ${value}`)
-  });
-
-  // Expose a global function for macros
-  game.loadedDiceRoll = {
-    showDialog,
-    rollDice: async (formula, targetString) => {
-      const target = parseTarget(targetString);
-      if (!formula || !target || !target.condition) {
-        console.error("Invalid formula or target for loaded dice roll.");
-        whisperError("Invalid formula or target.");
-        return;
-      }
-
-      const firstNumberMatch = formula.match(/\d+/); // Find first number in the formula
-      const firstNumber = firstNumberMatch ? parseInt(firstNumberMatch[0], 10) : null; // Parse it
-
-      // Adjust target based on first number in the formula
-      if (firstNumber !== null && target.value < firstNumber) {
-        console.log(`Adjusting target from ${target.value} to ${firstNumber} based on formula's first number.`);
-        target.value = firstNumber;
-      }
-
-      onSubmit({ formula, target });
-    }
-  };
-});
-
-const TARGET_FORMAT = /([^\d]*)[\s]*([\d]+)/;
+import { isTargetValid, parseTarget, evaluateTotalVsTarget } from "./utils.js";
+let loadedDialog = null;
 
 const whisperError = (error) => {
   console.error(`Foundry VTT | Loaded Dice Roll | ${error}`);
@@ -42,129 +7,178 @@ const whisperError = (error) => {
     user: game.user.id,
     whisper: [game.user.id],
     flavor: "Loaded Dice Roll",
-    content: `<div>Error: ${error}</div>`
+    content: `<div>Error: ${error}</div>`,
   });
 };
 
-const parseTarget = (target) => {
-  const match = target.match(TARGET_FORMAT);
-  if (match) {
-    const condition = match[1].trim();
-    const value = parseInt(match[2].trim());
-    switch (condition) {
-      case "lt":
-      case "<":
-        return { condition: "lt", value };
-      case "lte":
-      case "<=":
-        return { condition: "lte", value };
-      case "gt":
-      case ">":
-        return { condition: "gt", value };
-      case "gte":
-      case ">=":
-        return { condition: "gte", value };
-      case "":
-      case "eq":
-      case "=":
-      case "==":
-      case "===":
-        return { condition: "eq", value };
-      default:
-        return undefined;
+const showDialog = () => {
+  if (loadedDialog?.rendered) {
+    loadedDialog.bringToTop();
+  } else {
+    loadedDialog = new LoadedDialog();
+    loadedDialog.render(true);
+  }
+};
+
+/** Dialog **/
+
+export class LoadedDialog extends FormApplication {
+  constructor() {
+    super();
+    this.errors = {
+      formula: "",
+      target: "",
+    };
+    this.values = {
+      formula: "",
+      target: "",
     };
   }
-  return undefined;
-};
 
-const parseDialogDoc = (doc) => {
-  try {
-    const formula = doc.find("input[name='formula']").val();
-    const target = parseTarget(doc.find("input[name='target']").val());
-    return { formula, target };
-  } catch (e) {
-    console.error(e);
-    return { formula: undefined, target: undefined };
-  }
-};
-
-const evaluateTotalVsTarget = (total, target) => {
-  switch (target.condition) {
-    case "eq":
-      return total === target.value;
-    case "gt":
-      return total > target.value;
-    case "gte":
-      return total >= target.value;
-    case "lt":
-      return total < target.value;
-    case "lte":
-      return total <= target.value;
-    default:
-      return false;
-  }
-};
-
-const onSubmit = async ({ formula, target }) => {
-  if (!formula) {
-    whisperError("Missing Formula");
-    return;
-  }
-  if (!target || !target.condition) {
-    whisperError("Invalid Target Format");
-    return;
+  getData(options) {
+    return mergeObject(super.getData(options), {
+      values: this.values,
+      errors: this.errors,
+    });
   }
 
-  try {
-    new Roll(formula).roll();
-  } catch (e) {
-    console.error(e);
-    whisperError("Invalid Formula");
-    return;
+  static get defaultOptions() {
+    return mergeObject(super.defaultOptions, {
+      title: "Loaded Dice Roll",
+      template: "/modules/loaded-dice-roll/template/module.hbs",
+      width: 400,
+      height: "auto",
+      closeOnSubmit: false,
+      submitOnChange: false,
+      submitOnClose: false,
+    });
   }
 
-  const MAX_ATTEMPTS = game.settings.get('loaded-dice-roll', 'maxAttempts');
+  async activateListeners(html) {
+    super.activateListeners(html);
+    this.form.addEventListener("button[name='roll']", async () => {
+      this.form.querySelectorAll("div[class*='form-error']").forEach((container) => (container.textContent = ""));
+      await this._onSubmit.bind(this);
+    });
+  }
 
+  async _onSubmit(event) {
+    event.preventDefault();
+    const formula = this.form.querySelector("input[name='formula']").value;
+    const target = this.form.querySelector("input[name='target']").value;
+
+    this.errors = {
+      formula: "",
+      target: "",
+    };
+    this.values = {
+      formula,
+      target,
+    };
+    if (!formula) {
+      this.errors.formula = "Missing Formula";
+    }
+
+    if (!target) {
+      this.errors.target = "Missing Target";
+    }
+
+    const parsedTarget = parseTarget(target);
+
+    if (!parsedTarget) {
+      this.errors.target = "Target must be an integer";
+    }
+
+    if (this.errors.formula || this.errors.target) {
+      loadedDialog.render(true);
+      return;
+    }
+
+    if (!Roll.validate(formula)) {
+      this.errors.formula = "Invalid Formula";
+    }
+
+    if (!isTargetValid(formula, parsedTarget)) {
+      this.errors.target = "The Target is outside the range of the Formula.";
+    }
+
+    if (this.errors.formula || this.errors.target) {
+      loadedDialog.render(true);
+      return;
+    }
+
+    const result = await calculateRoll(formula, parsedTarget);
+
+    if (!result) {
+      this.errors.target = "Max Attempts Reached";
+      loadedDialog.render(true);
+    }
+  }
+}
+
+const calculateRoll = async (formula, parsedTarget) => {
+  const MAX_ATTEMPTS = game.settings.get("loaded-dice-roll", "maxAttempts");
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const dice = new Roll(formula);
     await dice.roll();
     const total = dice.total;
-    if (evaluateTotalVsTarget(total, target)) {
-      dice.toMessage({
-        speaker: ChatMessage.getSpeaker({actor: game.user.character})
-      }, {
-        rollMode: game.settings.get("core", "rollMode")
-      });
+    if (evaluateTotalVsTarget(total, parsedTarget)) {
+      dice.toMessage(
+        {
+          speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
+        },
+        {
+          rollMode: game.settings.get("core", "rollMode"),
+        },
+      );
       console.log(`Foundry VTT | Loaded Dice Roll | Succeeded in ${i + 1} attempts.`);
-      return;
+      if (loadedDialog?.rendered) {
+        loadedDialog.close();
+      }
+      return true;
     }
   }
-  whisperError("Max Attempts Reached");
+  return false;
 };
 
-const showDialog = async () => {
-  const html = await renderTemplate("/modules/loaded-dice-roll/template/module.html");
-  return new Promise((resolve) => {
-    new Dialog({
-      title: 'Loaded Dice Roll',
-      content: html,
-      buttons: {
-        roll: {
-          label: "Roll",
-          callback: async (html) => {
-            const doc = parseDialogDoc($(html));
-            resolve(await onSubmit(doc));
-          }
-        }
-      },
-      default: "roll",
-      close: () => resolve(null),
-      render: (html) => {
-        html.find("input[name='formula']").focus();
-      }
-    }).render(true);
+/** Hooks **/
+
+Hooks.once("init", () => {
+  game.settings.register("loaded-dice-roll", "maxAttempts", {
+    name: "Max Attempts",
+    hint: "The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 100000,
+    onChange: (value) => console.log(`Max Attempts changed to: ${value}`),
   });
-};
+
+  // Expose a global function for macros
+  game.loadedDiceRoll = {
+    showDialog,
+    rollDice: async (formula, target) => {
+      if (!formula) {
+        whisperError("Missing Formula");
+        return;
+      }
+      if (!target) {
+        whisperError("Missing Target");
+        return;
+      }
+      if (!Roll.validate(formula)) {
+        whisperError("Invalid Formula");
+        return;
+      }
+      if (!isTargetValid(formula, target)) {
+        whisperError("The Target is outside the range of the Formula.");
+        return;
+      }
+
+      await calculateRoll(formula, target);
+    },
+  };
+});
 
 Hooks.on("getSceneControlButtons", (controls) => {
   if (!game.user.isGM) {
@@ -178,7 +192,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
       title: "Loaded Dice Roll",
       icon: "fas fa-dice",
       onClick: () => showDialog(),
-      button: true
+      button: true,
     });
   }
 });
