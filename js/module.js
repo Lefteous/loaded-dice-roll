@@ -157,12 +157,12 @@ Hooks.once("init", () => {
 // Expose a global function for macros
 game.loadedDiceRoll = {
   showDialog,
-  rollDice: async (formula, targetString) => {
+  rollDice: async (formula, target) => {
     if (!formula) {
       whisperError("Missing Formula");
       return;
     }
-    if (!targetString) {
+    if (!target) {
       whisperError("Missing Target");
       return;
     }
@@ -172,7 +172,7 @@ game.loadedDiceRoll = {
     }
 
     // Parse the target string using the parseTarget function
-    let parsedTarget = parseTarget(targetString);
+    let parsedTarget = parseTarget(target);
     if (!parsedTarget) {
       whisperError("Invalid Target");
       return;
