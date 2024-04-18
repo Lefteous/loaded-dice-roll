@@ -154,30 +154,40 @@ Hooks.once("init", () => {
     onChange: (value) => console.log(`Max Attempts changed to: ${value}`),
   });
 
-  // Expose a global function for macros
-  game.loadedDiceRoll = {
-    showDialog,
-    rollDice: async (formula, target) => {
-      if (!formula) {
-        whisperError("Missing Formula");
-        return;
-      }
-      if (!target) {
-        whisperError("Missing Target");
-        return;
-      }
-      if (!Roll.validate(formula)) {
-        whisperError("Invalid Formula");
-        return;
-      }
-      if (!isTargetValid(formula, target)) {
-        whisperError("The Target is outside the range of the Formula.");
-        return;
-      }
+// Expose a global function for macros
+game.loadedDiceRoll = {
+  showDialog,
+  rollDice: async (formula, targetString) => {
+    if (!formula) {
+      whisperError("Missing Formula");
+      return;
+    }
+    if (!targetString) {
+      whisperError("Missing Target");
+      return;
+    }
+    if (!Roll.validate(formula)) {
+      whisperError("Invalid Formula");
+      return;
+    }
 
-      await calculateRoll(formula, target);
-    },
-  };
+    // Parse the target string using the parseTarget function
+    let parsedTarget = parseTarget(targetString);
+    if (!parsedTarget) {
+      whisperError("Invalid Target");
+      return;
+    }
+
+    // Validate the parsed target against the formula
+    if (!isTargetValid(formula, parsedTarget)) {
+      whisperError("The Target is outside the range of the Formula.");
+      return;
+    }
+
+    // Proceed with the roll calculation using the parsed and validated target
+    await calculateRoll(formula, parsedTarget);
+  },
+};
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
