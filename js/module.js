@@ -56,7 +56,10 @@ export class LoadedDialog extends FormApplication {
 
   async activateListeners(html) {
     super.activateListeners(html);
-    this.form.addEventListener("button[name='roll']", await this._onSubmit.bind(this));
+    this.form.addEventListener("button[name='roll']", async () => {
+      this.form.querySelectorAll("div[class*='form-error']").forEach((container) => (container.textContent = ""));
+      await this._onSubmit.bind(this);
+    });
   }
 
   async _onSubmit(event) {
@@ -107,7 +110,8 @@ export class LoadedDialog extends FormApplication {
     const result = await calculateRoll(formula, parsedTarget);
 
     if (!result) {
-      whisperError("Max Attempts Reached");
+      this.errors.target = "Max Attempts Reached";
+      loadedDialog.render(true);
     }
   }
 }
