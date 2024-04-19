@@ -1,4 +1,4 @@
-import { parseTarget, isTargetValid } from "../js/utils.js";
+import { parseTarget, isTargetValid, loadRoll } from "../js/utils.js";
 import { jest } from "@jest/globals";
 describe("module", () => {
   // Create a fake Roll class
@@ -7,14 +7,41 @@ describe("module", () => {
       this.formula = formula;
     }
 
-    evaluate({ minimize, maximize, async }) {
+    async evaluate({ minimize, maximize, async }) {
       return {
         total: 7,
       };
     }
   }
 
+  // Mock the LoadedRoll class
+  class LoadedRoll extends Roll {
+    constructor(formula, target) {
+      super(formula);
+      this._target = target;
+      this.terms = [
+        {
+          results: [{ result: 4 }, { result: 6 }],
+        },
+      ];
+    }
+
+    async evaluate(options = {}) {
+      await super.evaluate(options);
+      return loadRoll(this);
+    }
+  }
+
+  class Die {
+    constructor(faces, results) {
+      this.faces = faces;
+      this.results = results;
+    }
+  }
+
+  global.Die = Die;
   global.Roll = Roll;
+  global.LoadedRoll = LoadedRoll;
 
   describe("parseTarget", () => {
     it("should return undefined if the target is not a number", () => {
@@ -207,6 +234,39 @@ describe("module", () => {
       });
 
       expect(isTargetValid("2d6", { condition: "eq", value: 25 })).toBe(false);
+    });
+  });
+
+  describe("LoadedRoll", () => {
+    describe("evaluate", () => {
+      it("should modify the results to match the target", async () => {
+        let roll = new LoadedRoll("2d6", 10);
+        let term1 = new Die(6, [{ result: 6 }, { result: 6 }]);
+        roll._total = 12; // Set the initial total to 12
+        roll.terms = [term1];
+
+        roll = await roll.evaluate();
+
+        expect(roll._total).toBe(10); // Total should be modified to match the target
+        expect(roll.terms[0].results[0].result).toBe(4); // First die result should be modified
+        expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
+      });
+
+      it("should not modify the results if the target is already met", async () => {
+        const roll = new LoadedRoll("2d6", 10);
+        roll._total = 10; // Set the initial total to 10
+        roll.terms = [
+          {
+            results: [{ result: 4 }, { result: 6 }],
+          },
+        ];
+
+        await roll.evaluate();
+
+        expect(roll._total).toBe(10); // Total should remain unchanged
+        expect(roll.terms[0].results[0].result).toBe(4); // First die result should remain unchanged
+        expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
+      });
     });
   });
 });

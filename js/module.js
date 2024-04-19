@@ -1,4 +1,5 @@
-import { isTargetValid, parseTarget, evaluateTotalVsTarget, RiggedRoll } from "./utils.js";
+import { isTargetValid, parseTarget, evaluateTotalVsTarget } from "./utils.js";
+import { LoadedRoll } from "./loadedroll.js";
 let loadedDialog = null;
 
 const whisperError = (error) => {
@@ -144,7 +145,7 @@ const calculateRoll = async (formula, parsedTarget) => {
 /** Hooks **/
 
 Hooks.once("init", () => {
-  CONFIG.Dice.rolls.push(RiggedRoll);
+  CONFIG.Dice.rolls.push(LoadedRoll);
   game.settings.register("loaded-dice-roll", "maxAttempts", {
     name: "Max Attempts",
     hint: "The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.",
@@ -158,9 +159,9 @@ Hooks.once("init", () => {
   // Expose a global function for macros
   game.loadedDiceRoll = {
     showDialog,
-    riggedRoll: async (formula, target) => {
-      const riggedRoll = new RiggedRoll(formula, target);
-      const result = await riggedRoll.roll();
+    loadedRoll: async (formula, target) => {
+      const lRoll = new LoadedRoll(formula, target);
+      const result = await lRoll.roll();
       console.log(result);
       result.toMessage(
         {

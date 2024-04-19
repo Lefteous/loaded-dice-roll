@@ -1,46 +1,38 @@
-export class RiggedRoll extends Roll {
-  constructor(formula, target) {
-    super(formula);
-    this._target = target;
-  }
-
-  async evaluate(options = {}) {
-    await super.evaluate(options);
-    const diff = this._total - this._target;
-    let diffBy = diff;
-    const rolledDice = this.terms.filter((term) => term instanceof Die);
-    for (let die of rolledDice) {
-      for (let subdie of die.results) {
-        if (diffBy > 0) {
-          let fromMin = Math.abs(1 - subdie.result);
-          if (fromMin > diffBy) {
-            subdie.result -= diffBy;
-            this._total -= diffBy;
-            diffBy = 0;
-          } else if (fromMin < diffBy) {
-            subdie.result = 1;
-            this._total -= fromMin;
-            diffBy -= fromMin;
-          }
-        } else if (diffBy < 0) {
-          let fromMax = die.faces - subdie.result;
-          if (fromMax > Math.abs(diffBy)) {
-            subdie.result += Math.abs(diffBy);
-            this._total += Math.abs(diffBy);
-            diffBy = 0;
-          } else if (fromMax < Math.abs(diffBy)) {
-            subdie.result = die.faces;
-            this._total += fromMax;
-            diffBy += fromMax;
-          }
-        } else {
-          break;
+export const loadRoll = (roll) => {
+  const diff = roll._total - roll._target;
+  let diffBy = diff;
+  const rolledDice = roll.terms.filter((term) => term instanceof Die);
+  for (let die of rolledDice) {
+    for (let subdie of die.results) {
+      if (diffBy > 0) {
+        let fromMin = Math.abs(1 - subdie.result);
+        if (fromMin > diffBy) {
+          subdie.result -= diffBy;
+          roll._total -= diffBy;
+          diffBy = 0;
+        } else if (fromMin < diffBy) {
+          subdie.result = 1;
+          roll._total -= fromMin;
+          diffBy -= fromMin;
         }
+      } else if (diffBy < 0) {
+        let fromMax = die.faces - subdie.result;
+        if (fromMax > Math.abs(diffBy)) {
+          subdie.result += Math.abs(diffBy);
+          roll._total += Math.abs(diffBy);
+          diffBy = 0;
+        } else if (fromMax < Math.abs(diffBy)) {
+          subdie.result = die.faces;
+          roll._total += fromMax;
+          diffBy += fromMax;
+        }
+      } else {
+        break;
       }
     }
-    return this;
   }
-}
+  return roll;
+};
 
 export const isTargetValid = (formula, parsedTarget) => {
   const rollMinimum = new Roll(formula).evaluate({ minimize: true, async: false }).total;
