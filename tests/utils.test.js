@@ -461,71 +461,71 @@ describe("module", () => {
       });
     });
   });
-});
-describe("evaluateTotalVsTarget", () => {
-  it("should return true when total is equal to the target value with condition 'eq'", () => {
-    const total = 10;
-    const parsedTarget = { condition: "eq", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-  });
+  describe("evaluateTotalVsTarget", () => {
+    it("should return true when total is equal to the target value with condition 'eq'", () => {
+      const total = 10;
+      const parsedTarget = { condition: "eq", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+    });
 
-  it("should return false when total is not equal to the target value with condition 'eq'", () => {
-    const total = 15;
-    const parsedTarget = { condition: "eq", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-  });
+    it("should return false when total is not equal to the target value with condition 'eq'", () => {
+      const total = 15;
+      const parsedTarget = { condition: "eq", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    });
 
-  it("should return true when total is greater than the target value with condition 'gt'", () => {
-    const total = 15;
-    const parsedTarget = { condition: "gt", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-  });
+    it("should return true when total is greater than the target value with condition 'gt'", () => {
+      const total = 15;
+      const parsedTarget = { condition: "gt", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+    });
 
-  it("should return false when total is not greater than the target value with condition 'gt'", () => {
-    const total = 5;
-    const parsedTarget = { condition: "gt", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-  });
+    it("should return false when total is not greater than the target value with condition 'gt'", () => {
+      const total = 5;
+      const parsedTarget = { condition: "gt", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    });
 
-  it("should return true when total is greater than or equal to the target value with condition 'gte'", () => {
-    const total = 15;
-    const parsedTarget = { condition: "gte", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-  });
+    it("should return true when total is greater than or equal to the target value with condition 'gte'", () => {
+      const total = 15;
+      const parsedTarget = { condition: "gte", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+    });
 
-  it("should return false when total is not greater than or equal to the target value with condition 'gte'", () => {
-    const total = 5;
-    const parsedTarget = { condition: "gte", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-  });
+    it("should return false when total is not greater than or equal to the target value with condition 'gte'", () => {
+      const total = 5;
+      const parsedTarget = { condition: "gte", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    });
 
-  it("should return true when total is less than the target value with condition 'lt'", () => {
-    const total = 5;
-    const parsedTarget = { condition: "lt", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-  });
+    it("should return true when total is less than the target value with condition 'lt'", () => {
+      const total = 5;
+      const parsedTarget = { condition: "lt", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+    });
 
-  it("should return false when total is not less than the target value with condition 'lt'", () => {
-    const total = 15;
-    const parsedTarget = { condition: "lt", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-  });
+    it("should return false when total is not less than the target value with condition 'lt'", () => {
+      const total = 15;
+      const parsedTarget = { condition: "lt", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    });
 
-  it("should return true when total is less than or equal to the target value with condition 'lte'", () => {
-    const total = 5;
-    const parsedTarget = { condition: "lte", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-  });
+    it("should return true when total is less than or equal to the target value with condition 'lte'", () => {
+      const total = 5;
+      const parsedTarget = { condition: "lte", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+    });
 
-  it("should return false when total is not less than or equal to the target value with condition 'lte'", () => {
-    const total = 15;
-    const parsedTarget = { condition: "lte", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-  });
+    it("should return false when total is not less than or equal to the target value with condition 'lte'", () => {
+      const total = 15;
+      const parsedTarget = { condition: "lte", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    });
 
-  it("should return false when an invalid condition is provided", () => {
-    const total = 10;
-    const parsedTarget = { condition: "invalid", value: 10 };
-    expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    it("should return false when an invalid condition is provided", () => {
+      const total = 10;
+      const parsedTarget = { condition: "invalid", value: 10 };
+      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+    });
   });
 });
