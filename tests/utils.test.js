@@ -1,4 +1,4 @@
-import { parseTarget, isTargetValid, loadRoll, RandomizeTermsDice, evaluateTotalVsTarget } from "../js/utils.js";
+import { parseTarget, isTargetValid, loadRoll, evaluateTotalVsTarget, generateTargetValue } from "../js/utils.js";
 // eslint-disable-next-line no-shadow
 import { jest } from "@jest/globals";
 describe("module", () => {
@@ -127,12 +127,20 @@ describe("module", () => {
     it('should parse target with empty condition as "eq"', () => {
       expect(parseTarget("75")).toEqual({ condition: "eq", value: 75 });
     });
+
+    it("should parse target as an integer", () => {
+      expect(parseTarget(80)).toEqual({ condition: "eq", value: 80 });
+    });
   });
 
   describe("range testing", () => {
     // @ts-ignore
     // eslint-disable-next-line no-undef
     const rollSpy = jest.spyOn(global, "Roll");
+
+    afterAll(() => {
+      jest.clearAllMocks();
+    });
 
     it("should return false formula condition is invalid", () => {
       // @ts-ignore
@@ -435,97 +443,207 @@ describe("module", () => {
         expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
       });
     });
-    describe("randomize terms testing", () => {
-      it("should randomize the terms of a roll", async () => {
-        let roll = new LoadedRoll("4d6", 10);
-        let term1 = new Die(6, [{ result: 1 }, { result: 1 }, { result: 1 }, { result: 1 }]);
-        roll._total = 4;
-        roll.terms = [term1];
+    describe("evaluateTotalVsTarget", () => {
+      it("should return true when total is equal to the target value with condition 'eq'", () => {
+        const total = 10;
+        const parsedTarget = { condition: "eq", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+      });
 
-        roll = await roll.evaluate();
-        expect(roll._total).toBe(10); // Total should remain unchanged
-        expect(roll.terms[0].results[0].result).toBe(6); // First die result should remain unchanged
-        expect(roll.terms[0].results[1].result).toBe(2); // Second die result should remain unchanged
-        expect(roll.terms[0].results[2].result).toBe(1); // Third die result should remain unchanged
-        expect(roll.terms[0].results[3].result).toBe(1); // Fourth die result should remain unchanged
+      it("should return false when total is not equal to the target value with condition 'eq'", () => {
+        const total = 15;
+        const parsedTarget = { condition: "eq", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+      });
 
-        // Gather all of the results into an array in order
-        const results = roll.terms.map((term) => term.results.map((result) => result.result)).flat();
+      it("should return true when total is greater than the target value with condition 'gt'", () => {
+        const total = 15;
+        const parsedTarget = { condition: "gt", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+      });
 
-        roll = RandomizeTermsDice(roll);
+      it("should return false when total is not greater than the target value with condition 'gt'", () => {
+        const total = 5;
+        const parsedTarget = { condition: "gt", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+      });
 
-        const randomized_results = roll.terms.map((term) => term.results.map((result) => result.result)).flat();
+      it("should return true when total is greater than or equal to the target value with condition 'gte'", () => {
+        const total = 15;
+        const parsedTarget = { condition: "gte", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+      });
 
-        // The results should be different after randomization
-        expect(results).not.toEqual(randomized_results);
+      it("should return false when total is not greater than or equal to the target value with condition 'gte'", () => {
+        const total = 5;
+        const parsedTarget = { condition: "gte", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+      });
+
+      it("should return true when total is less than the target value with condition 'lt'", () => {
+        const total = 5;
+        const parsedTarget = { condition: "lt", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+      });
+
+      it("should return false when total is not less than the target value with condition 'lt'", () => {
+        const total = 15;
+        const parsedTarget = { condition: "lt", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+      });
+
+      it("should return true when total is less than or equal to the target value with condition 'lte'", () => {
+        const total = 5;
+        const parsedTarget = { condition: "lte", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
+      });
+
+      it("should return false when total is not less than or equal to the target value with condition 'lte'", () => {
+        const total = 15;
+        const parsedTarget = { condition: "lte", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+      });
+
+      it("should return false when an invalid condition is provided", () => {
+        const total = 10;
+        const parsedTarget = { condition: "invalid", value: 10 };
+        expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
       });
     });
-  });
-  describe("evaluateTotalVsTarget", () => {
-    it("should return true when total is equal to the target value with condition 'eq'", () => {
-      const total = 10;
-      const parsedTarget = { condition: "eq", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-    });
-
-    it("should return false when total is not equal to the target value with condition 'eq'", () => {
-      const total = 15;
-      const parsedTarget = { condition: "eq", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-    });
-
-    it("should return true when total is greater than the target value with condition 'gt'", () => {
-      const total = 15;
-      const parsedTarget = { condition: "gt", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-    });
-
-    it("should return false when total is not greater than the target value with condition 'gt'", () => {
-      const total = 5;
-      const parsedTarget = { condition: "gt", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-    });
-
-    it("should return true when total is greater than or equal to the target value with condition 'gte'", () => {
-      const total = 15;
-      const parsedTarget = { condition: "gte", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-    });
-
-    it("should return false when total is not greater than or equal to the target value with condition 'gte'", () => {
-      const total = 5;
-      const parsedTarget = { condition: "gte", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-    });
-
-    it("should return true when total is less than the target value with condition 'lt'", () => {
-      const total = 5;
+    describe("generateTargetValue", () => {
+      const formula = "2d6";
       const parsedTarget = { condition: "lt", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-    });
 
-    it("should return false when total is not less than the target value with condition 'lt'", () => {
-      const total = 15;
-      const parsedTarget = { condition: "lt", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-    });
+      const rollSpy = jest.spyOn(global, "Roll");
 
-    it("should return true when total is less than or equal to the target value with condition 'lte'", () => {
-      const total = 5;
-      const parsedTarget = { condition: "lte", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(true);
-    });
+      afterAll(() => {
+        jest.clearAllMocks();
+      });
 
-    it("should return false when total is not less than or equal to the target value with condition 'lte'", () => {
-      const total = 15;
-      const parsedTarget = { condition: "lte", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
-    });
+      it('should generate a value lower than the target when the condition is "lt"', () => {
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 1, // Minimum
+              };
+            },
+          };
+        });
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 12, //Maximum
+              };
+            },
+          };
+        });
+        const target = generateTargetValue(formula, parsedTarget);
+        expect(target).toBeLessThan(parsedTarget.value);
+      });
 
-    it("should return false when an invalid condition is provided", () => {
-      const total = 10;
-      const parsedTarget = { condition: "invalid", value: 10 };
-      expect(evaluateTotalVsTarget(total, parsedTarget)).toBe(false);
+      it('should generate a value lower than or equal to the target when the condition is "lte"', () => {
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 1, // Minimum
+              };
+            },
+          };
+        });
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 12, //Maximum
+              };
+            },
+          };
+        });
+        const target = generateTargetValue(formula, { condition: "lte", value: 10 });
+        expect(target).toBeLessThanOrEqual(10);
+      });
+
+      it('should generate a value greater than the target when the condition is "gt"', () => {
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 1, // Minimum
+              };
+            },
+          };
+        });
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 12, //Maximum
+              };
+            },
+          };
+        });
+        const target = generateTargetValue(formula, { condition: "gt", value: 10 });
+        expect(target).toBeGreaterThan(10);
+      });
+
+      it('should generate a value greater than or equal to the target when the condition is "gte"', () => {
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 1, // Minimum
+              };
+            },
+          };
+        });
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 12, //Maximum
+              };
+            },
+          };
+        });
+        const target = generateTargetValue(formula, { condition: "gte", value: 10 });
+        expect(target).toBeGreaterThanOrEqual(10);
+      });
+
+      it('should generate a value equal to the target when the condition is "eq"', () => {
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 1, // Minimum
+              };
+            },
+          };
+        });
+        // @ts-ignore
+        rollSpy.mockImplementationOnce(() => {
+          return {
+            evaluate: () => {
+              return {
+                total: 12, //Maximum
+              };
+            },
+          };
+        });
+        const target = generateTargetValue(formula, { condition: "eq", value: 10 });
+        expect(target).toBe(10);
+      });
     });
   });
 });

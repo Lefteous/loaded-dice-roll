@@ -1,31 +1,20 @@
-import { loadRoll } from "./utils";
+import { loadRoll, generateTargetValue } from "./utils.js";
 
-/**
- * @typedef Die
- * @property {number} faces
- * @property {Array<{result:number}>} results
- * @exports Die
- */
-
-/**
- * @typedef Roll
- * @property {string} formula
- * @property {Array<Die|string|number>} terms
- * @property {number} _total
- * @exports Roll
- */
-
-/**
- *
- *
- * @export
- * @class LoadedRoll
- * @extends {Roll}
- */
+// @ts-ignore
+// eslint-disable-next-line no-undef
 export class LoadedRoll extends Roll {
+  /**
+   * Creates an instance of LoadedRoll.
+   * @param {string} formula
+   * @param {number} target
+   * @memberof LoadedRoll
+   */
   constructor(formula, target) {
     super(formula);
+    /** @type {import('../types.js').ParsedTarget} */
+    /** @type {number} */
     this._target = target;
+    this._total = super._total;
   }
 
   async evaluate(options = {}) {

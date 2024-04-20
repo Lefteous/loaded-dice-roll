@@ -1,4 +1,4 @@
-import { isTargetValid, parseTarget, evaluateTotalVsTarget } from "./utils.js";
+import { isTargetValid, parseTarget, evaluateTotalVsTarget, generateTargetValue, randomizeTermsDice } from "./utils.js";
 import { LoadedRoll } from "./loadedroll.js";
 let loadedDialog = null;
 
@@ -76,131 +76,82 @@ export class LoadedDialog extends FormApplication {
       formula,
       target,
     };
-    if (!formula) {
-      this.errors.formula = "Missing Formula";
-    }
-
-    if (!target) {
-      this.errors.target = "Missing Target";
-    }
-
-    const parsedTarget = parseTarget(target);
-
-    if (!parsedTarget) {
-      this.errors.target = "Target must be an integer";
-    }
-
+    this.errors = await validateRoll(formula, target);
     if (this.errors.formula || this.errors.target) {
       loadedDialog.render(true);
-      return;
-    }
-
-    if (!Roll.validate(formula)) {
-      this.errors.formula = "Invalid Formula";
-    }
-
-    if (!isTargetValid(formula, parsedTarget)) {
-      this.errors.target = "The Target is outside the range of the Formula.";
-    }
-
-    if (this.errors.formula || this.errors.target) {
-      loadedDialog.render(true);
-      return;
-    }
-
-    const result = await calculateRoll(formula, parsedTarget);
-
-    if (!result) {
-      this.errors.target = "Max Attempts Reached";
-      loadedDialog.render(true);
+    } else {
+      await calculateRoll(formula, parseTarget(target));
     }
   }
 }
 
-const calculateRoll = async (formula, parsedTarget) => {
-  const MAX_ATTEMPTS = game.settings.get("loaded-dice-roll", "maxAttempts");
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    const dice = new Roll(formula);
-    await dice.roll();
-    const total = dice.total;
-    if (evaluateTotalVsTarget(total, parsedTarget)) {
-      dice.toMessage(
-        {
-          speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
-        },
-        {
-          rollMode: game.settings.get("core", "rollMode"),
-        },
-      );
-      console.log(`Foundry VTT | Loaded Dice Roll | Succeeded in ${i + 1} attempts.`);
-      if (loadedDialog?.rendered) {
-        loadedDialog.close();
-      }
-      return true;
-    }
+const validateRoll = async (formula, target) => {
+  const errors = {
+    formula: "",
+    target: "",
+  };
+
+  if (!formula) {
+    errors.formula = "Missing Formula";
   }
-  return false;
+
+  if (!target) {
+    errors.target = "Missing Target";
+  }
+
+  const parsedTarget = parseTarget(target);
+
+  if (!parsedTarget) {
+    errors.target = "Target must be an integer";
+  }
+
+  if (errors.formula || errors.target) {
+    return errors;
+  }
+
+  if (!Roll.validate(formula)) {
+    errors.formula = "Invalid Formula";
+  }
+
+  if (!isTargetValid(formula, parsedTarget)) {
+    errors.target = "The Target is outside the range of the Formula.";
+  }
+
+  return errors;
+};
+
+const calculateRoll = async (formula, parsedTarget) => {
+  const target = generateTargetValue(formula, parsedTarget);
+  const dice = new LoadedRoll(formula, target);
+  await dice.evaluate();
+  dice.toMessage(
+    {
+      speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
+    },
+    {
+      rollMode: game.settings.get("core", "rollMode"),
+    },
+  );
+  if (loadedDialog?.rendered) {
+    loadedDialog.close();
+  }
 };
 
 /** Hooks **/
 
 Hooks.once("init", () => {
   CONFIG.Dice.rolls.push(LoadedRoll);
-  game.settings.register("loaded-dice-roll", "maxAttempts", {
-    name: "Max Attempts",
-    hint: "The maximum number of attempts for rolling dice. Be careful, high numbers can slow down or freeze your Foundry.",
-    scope: "world",
-    config: true,
-    type: Number,
-    default: 100000,
-    onChange: (value) => console.log(`Max Attempts changed to: ${value}`),
-  });
 
   // Expose a global function for macros
   game.loadedDiceRoll = {
     showDialog,
-    loadedRoll: async (formula, target) => {
-      const lRoll = new LoadedRoll(formula, target);
-      const result = await lRoll.roll();
-      console.log(result);
-      result.toMessage(
-        {
-          speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
-        },
-        {
-          rollMode: game.settings.get("core", "rollMode"),
-        },
-      );
-    },
     rollDice: async (formula, target) => {
-      if (!formula) {
-        whisperError("Missing Formula");
+      const errors = await validateRoll(formula, target);
+      if (errors.formula || errors.target) {
+        whisperError(errors.formula || errors.target);
         return;
       }
-      if (!target) {
-        whisperError("Missing Target");
-        return;
-      }
-      if (!Roll.validate(formula)) {
-        whisperError("Invalid Formula");
-        return;
-      }
-
-      // Parse the target string using the parseTarget function
-      let parsedTarget = parseTarget(target);
-      if (!parsedTarget) {
-        whisperError("Invalid Target");
-        return;
-      }
-
-      // Validate the parsed target against the formula
-      if (!isTargetValid(formula, parsedTarget)) {
-        whisperError("The Target is outside the range of the Formula.");
-        return;
-      }
-
-      // Proceed with the roll calculation using the parsed and validated target
-      await calculateRoll(formula, parsedTarget);
+      await calculateRoll(formula, parseTarget(target));
     },
   };
 });

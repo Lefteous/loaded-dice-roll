@@ -1,19 +1,9 @@
-export /**
- * Randomizes the dice inside the terms of a roll.
+/**
  *
- * @param {*} roll
- * @return {*}
+ *
+ * @param {import("../js/loadedroll").LoadedRoll} roll - The roll to load.
+ * @return {import("../js/loadedroll").LoadedRoll} The loaded roll.
  */
-const RandomizeTermsDice = (roll) => {
-  const terms = roll.terms;
-  for (let term of terms) {
-    if (term instanceof Die) {
-      term.results = term.results.sort((a, b) => 0.5 - Math.random());
-    }
-  }
-  return roll;
-};
-
 export const loadRoll = (roll) => {
   // Calculate the difference between the roll total and the target
   const diff = roll._total - roll._target;
@@ -74,6 +64,32 @@ export const loadRoll = (roll) => {
   return roll;
 };
 
+/**
+ * Generates a random target value based on the formula and target condition.
+ * @param {string} formula
+ * @param {import("../types.js").ParsedTarget} parsedTarget
+ * @return {number}
+ */
+export const generateTargetValue = (formula, parsedTarget) => {
+  const rollMinimum = new Roll(formula).evaluate({ minimize: true, async: false }).total;
+  const rollMaximum = new Roll(formula).evaluate({ maximize: true, async: false }).total;
+
+  const { condition, value: target } = parsedTarget;
+
+  switch (condition) {
+    case "lt":
+      return Math.floor(Math.random() * (target - rollMinimum) + rollMinimum);
+    case "lte":
+      return Math.floor(Math.random() * (target - rollMinimum + 1) + rollMinimum);
+    case "gt":
+      return Math.floor(Math.random() * (rollMaximum - target) + target + 1);
+    case "gte":
+      return Math.floor(Math.random() * (rollMaximum - target + 1) + target);
+    case "eq":
+      return target;
+  }
+};
+
 export const isTargetValid = (formula, parsedTarget) => {
   const rollMinimum = new Roll(formula).evaluate({ minimize: true, async: false }).total;
   const rollMaximum = new Roll(formula).evaluate({ maximize: true, async: false }).total;
@@ -114,6 +130,9 @@ export const evaluateTotalVsTarget = (total, parsedTarget) => {
 
 export const TARGET_FORMAT = /^(lt|lte|gt|gte|eq|<|<=|>|>=|==|=|===)\s*(\d+)$/;
 export const parseTarget = (target) => {
+  if (typeof target !== "string") {
+    target = target.toString();
+  }
   const match = target.match(TARGET_FORMAT);
   if (match) {
     const condition = match[1].trim();
