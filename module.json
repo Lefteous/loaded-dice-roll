@@ -13,5 +13,17 @@
     "maximum": "11.999"
   },
   "esmodules": ["js/module.js"],
-  "styles": ["css/styles.css"]
+  "styles": ["css/styles.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "es",
+      "name": "Spanish",
+      "path": "lang/es.json"
+    }
+  ]
 }

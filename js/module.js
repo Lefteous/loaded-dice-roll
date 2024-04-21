@@ -1,4 +1,4 @@
-import { isTargetValid, parseTarget, generateTargetValue } from "./utils.js";
+import { isTargetValid, parseTarget, generateTargetValue, localize } from "./utils.js";
 import { LoadedRoll } from "./loadedroll.js";
 let loadedDialog = null;
 
@@ -7,7 +7,7 @@ const whisperError = (error) => {
   ChatMessage.create({
     user: game.user.id,
     whisper: [game.user.id],
-    flavor: "Loaded Dice Roll",
+    flavor: localize("loaded-dice-roll.title"),
     content: `<div>Error: ${error}</div>`,
   });
 };
@@ -45,7 +45,7 @@ export class LoadedDialog extends FormApplication {
 
   static get defaultOptions() {
     return mergeObject(super.defaultOptions, {
-      title: "Loaded Dice Roll",
+      title: localize("loaded-dice-roll.title"),
       template: "/modules/loaded-dice-roll/template/module.hbs",
       width: 400,
       height: "auto",
@@ -92,17 +92,17 @@ const validateRoll = async (formula, target) => {
   };
 
   if (!formula) {
-    errors.formula = "Missing Formula";
+    errors.formula = localize("loaded-dice-roll.errors.formula.required");
   }
 
   if (!target) {
-    errors.target = "Missing Target";
+    errors.target = localize("loaded-dice-roll.errors.target.required");
   }
 
   const parsedTarget = parseTarget(target);
 
   if (!parsedTarget) {
-    errors.target = "Target must be an integer";
+    errors.target = localize("loaded-dice-roll.errors.target.invalid");
   }
 
   if (errors.formula || errors.target) {
@@ -110,11 +110,11 @@ const validateRoll = async (formula, target) => {
   }
 
   if (!Roll.validate(formula)) {
-    errors.formula = "Invalid Formula";
+    errors.formula = localize("loaded-dice-roll.errors.formula.required");
   }
 
   if (!isTargetValid(formula, parsedTarget)) {
-    errors.target = "The Target is outside the range of the Formula.";
+    errors.target = localize("loaded-dice-roll.errors.target.outside-range");
   }
 
   return errors;
@@ -165,7 +165,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
   if (bar) {
     bar.tools.push({
       name: "loaded-dice-roll",
-      title: "Loaded Dice Roll",
+      title: localize("loaded-dice-roll.title"),
       icon: "fas fa-dice",
       onClick: () => showDialog(),
       button: true,

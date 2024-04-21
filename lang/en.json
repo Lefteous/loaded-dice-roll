@@ -1,0 +1,29 @@
+{
+  "loaded-dice-roll": {
+    "title": "Loaded Dice Roll",
+    "form": {
+      "formula": {
+        "title": "Loaded Roll Formula",
+        "placeholder": "Example: 2d6"
+      },
+      "target": {
+        "title": "Target Number",
+        "placeholder": "Example: 7"
+      },
+      "roll-button": {
+        "title": "Roll"
+      }
+    },
+    "errors": {
+      "formula": {
+        "required": "Formula is required",
+        "invalid": "Invalid formula"
+      },
+      "target": {
+        "required": "Target is required",
+        "invalid": "Invalid target",
+        "outside-range": "The Target is outside the range of the Formula."
+      }
+    }
+  }
+}

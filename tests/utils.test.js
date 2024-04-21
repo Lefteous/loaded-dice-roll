@@ -1,4 +1,11 @@
-import { parseTarget, isTargetValid, loadRoll, evaluateTotalVsTarget, generateTargetValue } from "../js/utils.js";
+import {
+  parseTarget,
+  isTargetValid,
+  loadRoll,
+  evaluateTotalVsTarget,
+  generateTargetValue,
+  localize,
+} from "../js/utils.js";
 // eslint-disable-next-line no-shadow
 import { jest } from "@jest/globals";
 describe("module", () => {
@@ -60,6 +67,17 @@ describe("module", () => {
   global.Roll = Roll;
   // eslint-disable-next-line no-undef
   global.LoadedRoll = LoadedRoll;
+
+  global.game = {
+    i18n: {
+      localize: jest.fn().mockImplementation((key) => {
+        if (key === "valid_key") {
+          return "Localized String";
+        }
+        return "";
+      }),
+    },
+  };
 
   describe("parseTarget", () => {
     it("should return undefined if the target condition is invalid", () => {
@@ -644,6 +662,29 @@ describe("module", () => {
         const target = generateTargetValue(formula, { condition: "eq", value: 10 });
         expect(target).toBe(10);
       });
+    });
+  });
+  describe("localize", () => {
+    it("should return the localized string for a valid key", () => {
+      // Call the localize function with a valid key
+      const result = localize("valid_key");
+
+      // Expect the game.i18n.localize function to be called with the correct key
+      expect(game.i18n.localize).toHaveBeenCalledWith("valid_key");
+
+      // Expect the result to be the localized string
+      expect(result).toBe("Localized String");
+    });
+
+    it("should return an empty string for an invalid key", () => {
+      // Call the localize function with an invalid key
+      const result = localize("invalid_key");
+
+      // Expect the game.i18n.localize function to be called with the correct key
+      expect(game.i18n.localize).toHaveBeenCalledWith("invalid_key");
+
+      // Expect the result to be an empty string
+      expect(result).toBe("");
     });
   });
 });

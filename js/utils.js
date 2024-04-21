@@ -65,6 +65,13 @@ export const loadRoll = (roll) => {
 };
 
 /**
+ * Localizes a string using the game's localization system.
+ *
+ * @param {string} key
+ */
+export const localize = (key) => game.i18n.localize(key);
+
+/**
  * Generates a random target value based on the formula and target condition.
  * @param {string} formula
  * @param {import("../types.js").ParsedTarget} parsedTarget
