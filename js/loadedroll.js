@@ -1,4 +1,4 @@
-import { loadRoll, generateTargetValue } from "./utils.js";
+import { loadRoll } from "./utils.js";
 
 // @ts-ignore
 // eslint-disable-next-line no-undef

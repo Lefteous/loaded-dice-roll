@@ -1,4 +1,4 @@
-import { isTargetValid, parseTarget, evaluateTotalVsTarget, generateTargetValue, randomizeTermsDice } from "./utils.js";
+import { isTargetValid, parseTarget, generateTargetValue } from "./utils.js";
 import { LoadedRoll } from "./loadedroll.js";
 let loadedDialog = null;
 
