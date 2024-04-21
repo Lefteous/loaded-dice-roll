@@ -4,11 +4,13 @@
     "form": {
       "formula": {
         "title": "Loaded Roll Formula",
-        "placeholder": "Example: 2d6"
+        "placeholder": "Example: 2d6",
+        "tooltip": "The formula for the dice roll. Example: 2d6+2+1d6+2d10 or 1d12"
       },
       "target": {
         "title": "Target Number",
-        "placeholder": "Example: 7"
+        "placeholder": "Example: 7",
+        "tooltip": "The target number for the roll. Example: 6 or 'gt 7' or '>= 12'"
       },
       "roll-button": {
         "title": "Roll"

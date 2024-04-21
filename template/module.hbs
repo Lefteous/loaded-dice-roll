@@ -1,6 +1,8 @@
 <form>
   <div class="form-group">
-    <label for="formula">{{localize "loaded-dice-roll.form.formula.title"}}</label>
+    <label for="formula">{{localize "loaded-dice-roll.form.formula.title"}}
+      <span class="fas fa-question-circle" title="{{localize 'loaded-dice-roll.form.formula.tooltip'}}"></span>
+    </label>
     <input
       type="text"
       name="formula"
@@ -13,7 +15,9 @@
     <div class="form-error">{{errors.formula}}</div>
   {{/if}}
   <div class="form-group">
-    <label for="target">{{localize "loaded-dice-roll.form.target.title"}}</label>
+    <label for="target">{{localize "loaded-dice-roll.form.target.title"}}
+      <span class="fas fa-question-circle" title="{{localize 'loaded-dice-roll.form.target.tooltip'}}"></span>
+    </label>
     <input
       type="text"
       name="target"
