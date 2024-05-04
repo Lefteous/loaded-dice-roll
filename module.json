@@ -5,7 +5,7 @@
   "authors": [
     {
       "name": "Lefteous",
-      "email": "",
+      "email": "josh@jsn.dev",
       "url": "https://github.com/lefteous/"
     },
     {
@@ -16,15 +16,15 @@
   ],
   "url": "https://github.com/lefteous/loaded-dice-roll",
   "manifest": "https://raw.githubusercontent.com/lefteous/loaded-dice-roll/main/module.json",
-  "download": "https://github.com/Lefteous/loaded-dice-roll/archive/v1.0.4.zip",
+  "download": "https://github.com/Lefteous/loaded-dice-roll/archive/v2.0.0.zip",
   "bugs": "https://github.com/Lefteous/loaded-dice-roll/issues",
   "flags": {
     "allowBugReporter": true
   },
-  "version": "1.0.4",
+  "version": "2.0.0",
   "compatibility": {
     "minimum": "11.0",
-    "verified": "11.0",
+    "verified": "11.315",
     "maximum": "11.999"
   },
   "esmodules": ["js/module.js"],
