@@ -1,0 +1,31 @@
+{
+  "loaded-dice-roll": {
+    "title": "Lanzamiento de Dados Cargados",
+    "form": {
+      "formula": {
+        "title": "Fórmula de Lanzamiento Cargado",
+        "placeholder": "Ejemplo: 2d6",
+        "tooltip": "La fórmula para la tirada de dados. Ejemplo: 2d6+2+1d6+2d10 o 1d12"
+      },
+      "target": {
+        "title": "Número Objetivo",
+        "placeholder": "Ejemplo: 7",
+        "tooltip": "El número objetivo para la tirada. Ejemplo: 6 o 'gt 7' o '>= 12'"
+      },
+      "roll-button": {
+        "title": "Lanzar"
+      }
+    },
+    "errors": {
+      "formula": {
+        "required": "La fórmula es requerida",
+        "invalid": "Fórmula inválida"
+      },
+      "target": {
+        "required": "El objetivo es requerido",
+        "invalid": "Objetivo inválido",
+        "outside-range": "El objetivo está fuera del rango de la fórmula."
+      }
+    }
+  }
+}
