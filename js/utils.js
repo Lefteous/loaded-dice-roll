@@ -81,11 +81,15 @@ export const localize = (key) => game.i18n.localize(key);
  * Generates a random target value based on the formula and target condition.
  * @param {string} formula
  * @param {import("../types.js").ParsedTarget} parsedTarget
- * @return {number}
+ * @return {Promise<number>} The generated target value.
  */
-export const generateTargetValue = (formula, parsedTarget) => {
-  const rollMinimum = new Roll(formula).evaluate({ minimize: true, async: false }).total;
-  const rollMaximum = new Roll(formula).evaluate({ maximize: true, async: false }).total;
+export const generateTargetValue = async (formula, parsedTarget) => {
+  let r = new Roll(formula);
+  const minEval = await r.evaluate({ minimize: true });
+  const rollMinimum = minEval.total;
+  r = new Roll(formula);
+  const maxEval = await r.evaluate({ maximize: true });
+  const rollMaximum = maxEval.total;
 
   const { condition, value: target } = parsedTarget;
 
@@ -103,9 +107,13 @@ export const generateTargetValue = (formula, parsedTarget) => {
   }
 };
 
-export const isTargetValid = (formula, parsedTarget) => {
-  const rollMinimum = new Roll(formula).evaluate({ minimize: true, async: false }).total;
-  const rollMaximum = new Roll(formula).evaluate({ maximize: true, async: false }).total;
+export const isTargetValid = async (formula, parsedTarget) => {
+  let r = new Roll(formula);
+  const minEval = await r.evaluate({ minimize: true });
+  const rollMinimum = minEval.total;
+  r = new Roll(formula);
+  const maxEval = await r.evaluate({ maximize: true });
+  const rollMaximum = maxEval.total;
 
   const { condition, value: target } = parsedTarget;
 
