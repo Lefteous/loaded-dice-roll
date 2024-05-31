@@ -38,7 +38,7 @@ describe("module", () => {
     }
 
     // eslint-disable-next-line no-unused-vars
-    async evaluate({ minimize, maximize, async }) {
+    async evaluate({ minimize, maximize }) {
       return {
         total: 7,
       };
@@ -58,7 +58,7 @@ describe("module", () => {
       this.terms = [die];
     }
 
-    async evaluate(options = { minimize: false, maximize: false, async: false }) {
+    async evaluate(options = { minimize: false, maximize: false }) {
       await super.evaluate(options);
       return loadRoll(this);
     }
@@ -164,7 +164,7 @@ describe("module", () => {
       jest.clearAllMocks();
     });
 
-    it("should return false formula condition is invalid", () => {
+    it("should return false formula condition is invalid", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -185,10 +185,10 @@ describe("module", () => {
           },
         };
       });
-      expect(isTargetValid("2d6", { condition: "invalidvalue", value: 10 })).toBe(false);
+      expect(await isTargetValid("2d6", { condition: "invalidvalue", value: 10 })).toBe(false);
     });
 
-    it("Assure GT 10 falls within 20-30", () => {
+    it("Assure GT 10 falls within 20-30", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -210,9 +210,9 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "gt", value: 10 })).toBe(true);
+      expect(await isTargetValid("2d6", { condition: "gt", value: 10 })).toBe(true);
     });
-    it("Assure LT 10 falls outside of 20-30", () => {
+    it("Assure LT 10 falls outside of 20-30", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -234,10 +234,10 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "lt", value: 10 })).toBe(false);
+      expect(await isTargetValid("2d6", { condition: "lt", value: 10 })).toBe(false);
     });
 
-    it("Assure LTE 10 falls within 10-20", () => {
+    it("Assure LTE 10 falls within 10-20", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -259,10 +259,10 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "lte", value: 20 })).toBe(true);
+      expect(await isTargetValid("2d6", { condition: "lte", value: 20 })).toBe(true);
     });
 
-    it("Assure GT 30 falls outside of 20-30", () => {
+    it("Assure GT 30 falls outside of 20-30", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -284,9 +284,9 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "gt", value: 30 })).toBe(false);
+      expect(await isTargetValid("2d6", { condition: "gt", value: 30 })).toBe(false);
     });
-    it("Assure GTE 30 falls inside of 20-30", () => {
+    it("Assure GTE 30 falls inside of 20-30", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -308,9 +308,9 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "gte", value: 30 })).toBe(true);
+      expect(await isTargetValid("2d6", { condition: "gte", value: 30 })).toBe(true);
     });
-    it("Assure EQ 25 falls inside of 20-30", () => {
+    it("Assure EQ 25 falls inside of 20-30", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -332,9 +332,9 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "eq", value: 25 })).toBe(true);
+      expect(await isTargetValid("2d6", { condition: "eq", value: 25 })).toBe(true);
     });
-    it("Assure EQ 25 falls outside of 1-5", () => {
+    it("Assure EQ 25 falls outside of 1-5", async () => {
       // @ts-ignore
       rollSpy.mockImplementationOnce(() => {
         return {
@@ -356,7 +356,7 @@ describe("module", () => {
         };
       });
 
-      expect(isTargetValid("2d6", { condition: "eq", value: 25 })).toBe(false);
+      expect(await isTargetValid("2d6", { condition: "eq", value: 25 })).toBe(false);
     });
   });
 
@@ -528,7 +528,7 @@ describe("module", () => {
         jest.clearAllMocks();
       });
 
-      it('should generate a value lower than the target when the condition is "lt"', () => {
+      it('should generate a value lower than the target when the condition is "lt"', async () => {
         // @ts-ignore
         rollSpy.mockImplementationOnce(() => {
           return {
@@ -549,11 +549,11 @@ describe("module", () => {
             },
           };
         });
-        const target = generateTargetValue(formula, parsedTarget);
+        const target = await generateTargetValue(formula, parsedTarget);
         expect(target).toBeLessThan(parsedTarget.value);
       });
 
-      it('should generate a value lower than or equal to the target when the condition is "lte"', () => {
+      it('should generate a value lower than or equal to the target when the condition is "lte"', async () => {
         // @ts-ignore
         rollSpy.mockImplementationOnce(() => {
           return {
@@ -574,11 +574,11 @@ describe("module", () => {
             },
           };
         });
-        const target = generateTargetValue(formula, { condition: "lte", value: 10 });
+        const target = await generateTargetValue(formula, { condition: "lte", value: 10 });
         expect(target).toBeLessThanOrEqual(10);
       });
 
-      it('should generate a value greater than the target when the condition is "gt"', () => {
+      it('should generate a value greater than the target when the condition is "gt"', async () => {
         // @ts-ignore
         rollSpy.mockImplementationOnce(() => {
           return {
@@ -599,11 +599,11 @@ describe("module", () => {
             },
           };
         });
-        const target = generateTargetValue(formula, { condition: "gt", value: 10 });
+        const target = await generateTargetValue(formula, { condition: "gt", value: 10 });
         expect(target).toBeGreaterThan(10);
       });
 
-      it('should generate a value greater than or equal to the target when the condition is "gte"', () => {
+      it('should generate a value greater than or equal to the target when the condition is "gte"', async () => {
         // @ts-ignore
         rollSpy.mockImplementationOnce(() => {
           return {
@@ -624,11 +624,11 @@ describe("module", () => {
             },
           };
         });
-        const target = generateTargetValue(formula, { condition: "gte", value: 10 });
+        const target = await generateTargetValue(formula, { condition: "gte", value: 10 });
         expect(target).toBeGreaterThanOrEqual(10);
       });
 
-      it('should generate a value equal to the target when the condition is "eq"', () => {
+      it('should generate a value equal to the target when the condition is "eq"', async () => {
         // @ts-ignore
         rollSpy.mockImplementationOnce(() => {
           return {
@@ -649,7 +649,7 @@ describe("module", () => {
             },
           };
         });
-        const target = generateTargetValue(formula, { condition: "eq", value: 10 });
+        const target = await generateTargetValue(formula, { condition: "eq", value: 10 });
         expect(target).toBe(10);
       });
     });

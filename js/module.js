@@ -113,7 +113,9 @@ const validateRoll = async (formula, target) => {
     errors.formula = localize("loaded-dice-roll.errors.formula.required");
   }
 
-  if (!isTargetValid(formula, parsedTarget)) {
+  const validTarget = await isTargetValid(formula, parsedTarget);
+
+  if (!validTarget) {
     errors.target = localize("loaded-dice-roll.errors.target.outside-range");
   }
 
@@ -121,7 +123,7 @@ const validateRoll = async (formula, target) => {
 };
 
 const calculateRoll = async (formula, parsedTarget) => {
-  const target = generateTargetValue(formula, parsedTarget);
+  const target = await generateTargetValue(formula, parsedTarget);
   const dice = new LoadedRoll(formula, target);
   await dice.evaluate();
   dice.toMessage(

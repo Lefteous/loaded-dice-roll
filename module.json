@@ -25,7 +25,7 @@
   "compatibility": {
     "minimum": "11.0",
     "verified": "11.315",
-    "maximum": "11.999"
+    "maximum": "12"
   },
   "esmodules": ["js/module.js"],
   "styles": ["css/styles.css"],
