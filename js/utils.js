@@ -14,56 +14,62 @@ export const loadRoll = (roll) => {
   // Find all dice terms in the roll
   const rolledDice = roll.terms.filter((term) => term instanceof Die);
 
-  // For each dice set inside the rolled dice (2d12) (1d6) (1d8) (5d6)
-  for (let die of rolledDice) {
+  while (diffBy !== 0) {
+    // Select a random die set from the pool.
+    const randomDie = rolledDice[Math.floor(Math.random() * rolledDice.length)];
+    // Select a random die from the set
+    const randomSubDie = randomDie.results[Math.floor(Math.random() * randomDie.results.length)];
+
     // For each dice in the set (2d12 -> 2 dice, 1d6 -> 1 die, 1d8 -> 1 die, 5d6 -> 5 dice)
-    for (let subdie of die.results) {
-      // If the difference is positive, we need to reduce the result
-      if (diffBy > 0) {
-        // Calculate the distance from the minimum result
-        let fromMin = Math.abs(1 - subdie.result);
+    //for (let subdie of randomDie.results) {
+    // If the difference is positive, we need to reduce the result
+    if (diffBy > 0) {
+      // Calculate the distance from the minimum result
+      let fromMin = Math.abs(1 - randomSubDie.result);
 
-        // If the result is already the minimum, then it can't be lowered any more.
-        if (fromMin === 0) {
-          continue;
-          // If the distance from the minimum is greater than the difference, we can reduce the result by the difference
-        } else if (fromMin > diffBy) {
-          subdie.result -= diffBy;
-          roll._total -= diffBy;
-          diffBy = 0;
-          // If the distance from the minimum is less than the difference, we reduce the result to the minimum and continue
-        } else if (fromMin <= diffBy) {
-          subdie.result = 1;
-          roll._total -= fromMin;
-          diffBy -= fromMin;
-        }
-        // If the difference is negative, we need to increase the result
-      } else if (diffBy < 0) {
-        // Calculate the distance from the maximum result
-        let fromMax = die.faces - subdie.result;
-
-        // If the result is already the maximum, then it can't be raised any more.
-        if (fromMax === 0) {
-          continue;
-          // If the distance from the maximum is greater than the absolute value of the difference, we can raise the result by the absolute value of the difference
-        } else if (fromMax > Math.abs(diffBy)) {
-          subdie.result += Math.abs(diffBy);
-          roll._total += Math.abs(diffBy);
-          diffBy = 0;
-          // If the distance from the maximum is less than the absolute value of the difference, we raise the result to the maximum and continue
-        } else if (fromMax <= Math.abs(diffBy)) {
-          subdie.result = die.faces;
-          roll._total += fromMax;
-          diffBy += fromMax;
-        }
-      } else {
-        break;
+      // If the result is already the minimum, then it can't be lowered any more.
+      if (fromMin === 0) {
+        continue;
+        // If the distance from the minimum is greater than the difference, we can reduce the result by the difference
+      } else if (fromMin > diffBy) {
+        randomSubDie.result -= diffBy;
+        roll._total -= diffBy;
+        diffBy = 0;
+        // If the distance from the minimum is less than the difference, we reduce the result to the minimum and continue
+      } else if (fromMin <= diffBy) {
+        // Reduce the result by half the distance from the minimum
+        const adjustmentAmount = Math.round(fromMin / 2);
+        randomSubDie.result -= adjustmentAmount;
+        roll._total -= adjustmentAmount;
+        diffBy -= adjustmentAmount;
       }
+      // If the difference is negative, we need to increase the result
+    } else if (diffBy < 0) {
+      // Calculate the distance from the maximum result
+      let fromMax = randomDie.faces - randomSubDie.result;
+
+      // If the result is already the maximum, then it can't be raised any more.
+      if (fromMax === 0) {
+        continue;
+        // If the distance from the maximum is greater than the absolute value of the difference, we can raise the result by the absolute value of the difference
+      } else if (fromMax > Math.abs(diffBy)) {
+        randomSubDie.result += Math.abs(diffBy);
+        roll._total += Math.abs(diffBy);
+        diffBy = 0;
+        // If the distance from the maximum is less than the absolute value of the difference, we raise the result to the maximum and continue
+      } else if (fromMax <= Math.abs(diffBy)) {
+        // Raise the result by half the distance from the maximum
+        const adjustmentAmount = Math.round(fromMax / 2);
+        randomSubDie.result += adjustmentAmount;
+        roll._total += adjustmentAmount;
+        diffBy += adjustmentAmount;
+      }
+    } else {
+      break;
     }
   }
   return roll;
 };
-
 /**
  * Localizes a string using the game's localization system.
  *

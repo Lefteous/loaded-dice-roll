@@ -8,6 +8,9 @@ import {
 } from "../js/utils.js";
 // eslint-disable-next-line no-shadow
 import { jest } from "@jest/globals";
+
+const ROLL_COUNT = 50;
+
 describe("module", () => {
   /**
    * @class Die
@@ -68,6 +71,7 @@ describe("module", () => {
   // eslint-disable-next-line no-undef
   global.LoadedRoll = LoadedRoll;
 
+  // eslint-disable-next-line no-undef
   global.game = {
     i18n: {
       localize: jest.fn().mockImplementation((key) => {
@@ -366,40 +370,40 @@ describe("module", () => {
 
         roll = await roll.evaluate();
         expect(roll._total).toBe(10); // Total should be modified to match the target
-        expect(roll.terms[0].results[0].result).toBe(4); // First die result should be modified
-        expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
       });
 
-      it("set 2d6 to 10 - 20 Times", async () => {
+      it(`set 2d6 to 10 - ${ROLL_COUNT} Times`, async () => {
         let roll = new LoadedRoll("2d6", 10);
         let term1 = new Die(6, [{ result: 6 }, { result: 6 }]);
         roll._total = 12; // Set the initial total to 12
         roll.terms = [term1];
         const rollSpy = jest.spyOn(roll, "evaluate");
 
-        for (let i = 0; i < 20; i++) {
+        const results = [];
+        for (let i = 0; i < ROLL_COUNT; i++) {
           roll = await roll.evaluate();
+          results.push(roll._total);
         }
-        expect(rollSpy).toHaveBeenCalledTimes(20);
-        expect(rollSpy).toHaveReturnedTimes(20);
-        expect(roll._total).toBe(10); // Total should be modified to match the target
-        expect(roll.terms[0].results[0].result).toBe(4); // First die result should be modified
-        expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
+        expect(rollSpy).toHaveBeenCalledTimes(ROLL_COUNT);
+        expect(rollSpy).toHaveReturnedTimes(ROLL_COUNT);
+        // expect(roll._total).toBe(10); // Total should be modified to match the target
+        expect(new Set(results)).toEqual(new Set([10]));
       });
 
-      it("set 1d20 to 15 - 20 Times", async () => {
+      it(`set 1d20 to 15 - ${ROLL_COUNT} Times`, async () => {
         let roll = new LoadedRoll("1d20", 15);
         let term1 = new Die(20, [{ result: 20 }]);
         roll._total = 20; // Set the initial total to 12
         roll.terms = [term1];
         const rollSpy = jest.spyOn(roll, "evaluate");
-        for (let i = 0; i < 20; i++) {
+        const results = [];
+        for (let i = 0; i < ROLL_COUNT; i++) {
           roll = await roll.evaluate();
+          results.push(roll._total);
         }
-        expect(rollSpy).toHaveBeenCalledTimes(20);
-        expect(rollSpy).toHaveReturnedTimes(20);
-        expect(roll._total).toBe(15); // Total should be modified to match the target
-        expect(roll.terms[0].results[0].result).toBe(15); // First die result should be modified
+        expect(rollSpy).toHaveBeenCalledTimes(ROLL_COUNT);
+        expect(rollSpy).toHaveReturnedTimes(ROLL_COUNT);
+        expect(new Set(results)).toEqual(new Set([15]));
       });
 
       it("set 4d6(10) to 4", async () => {
@@ -410,10 +414,6 @@ describe("module", () => {
 
         roll = await roll.evaluate();
         expect(roll._total).toBe(4); // Total should remain unchanged
-        expect(roll.terms[0].results[0].result).toBe(1); // First die result should remain unchanged
-        expect(roll.terms[0].results[1].result).toBe(1); // Second die result should remain unchanged
-        expect(roll.terms[0].results[2].result).toBe(1); // Third die result should remain unchanged
-        expect(roll.terms[0].results[3].result).toBe(1); // Fourth die result should remain unchanged
       });
 
       it("set 4d6(4) to 10 from 4", async () => {
@@ -424,10 +424,6 @@ describe("module", () => {
 
         roll = await roll.evaluate();
         expect(roll._total).toBe(10); // Total should remain unchanged
-        expect(roll.terms[0].results[0].result).toBe(6); // First die result should remain unchanged
-        expect(roll.terms[0].results[1].result).toBe(2); // Second die result should remain unchanged
-        expect(roll.terms[0].results[2].result).toBe(1); // Third die result should remain unchanged
-        expect(roll.terms[0].results[3].result).toBe(1); // Fourth die result should remain unchanged
       });
 
       it("set 4d6(4) to 20 from 9", async () => {
@@ -438,10 +434,6 @@ describe("module", () => {
 
         roll = await roll.evaluate();
         expect(roll._total).toBe(20); // Total should remain unchanged
-        expect(roll.terms[0].results[0].result).toBe(6); // First die result should remain unchanged
-        expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
-        expect(roll.terms[0].results[2].result).toBe(6); // Third die result should remain unchanged
-        expect(roll.terms[0].results[3].result).toBe(2); // Fourth die result should remain unchanged
       });
 
       it("should not modify the results if the target is already met", async () => {
@@ -457,8 +449,6 @@ describe("module", () => {
         await roll.evaluate();
 
         expect(roll._total).toBe(10); // Total should remain unchanged
-        expect(roll.terms[0].results[0].result).toBe(4); // First die result should remain unchanged
-        expect(roll.terms[0].results[1].result).toBe(6); // Second die result should remain unchanged
       });
     });
     describe("evaluateTotalVsTarget", () => {
