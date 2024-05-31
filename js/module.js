@@ -146,6 +146,9 @@ Hooks.once("init", () => {
   game.loadedDiceRoll = {
     showDialog,
     rollDice: async (formula, target) => {
+      if (!game.user.isGM) {
+        return;
+      }
       const errors = await validateRoll(formula, target);
       if (errors.formula || errors.target) {
         whisperError(errors.formula || errors.target);
