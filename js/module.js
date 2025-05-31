@@ -162,18 +162,32 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
+  
   if (!game.user.isGM) {
     return;
   }
 
-  const bar = controls.find((c) => c.name === "token");
-  if (bar) {
-    bar.tools.push({
-      name: "loaded-dice-roll",
-      title: localize("loaded-dice-roll.title"),
-      icon: "fas fa-dice",
-      onClick: () => showDialog(),
-      button: true,
-    });
+  const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
+  const button = {
+    name: "loaded-dice-roll",
+    title: localize("loaded-dice-roll.title"),
+    icon: "fas fa-dice",
+    onClick: () => showDialog(),
+    button: true,
+  };
+  let bar;
+
+  if (v13AndAbove) {
+    bar = controls.tokens.tools;
+
+    if (bar) {
+        bar["loaded-dice-roll"] = button;
+    }
+  } else {
+    bar = controls.find((c) => c.name === "token");
+
+    if (bar) {
+      bar.tools.push(button);
+    }
   }
 });
