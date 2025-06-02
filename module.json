@@ -1,5 +1,5 @@
 {
-  "name": "loaded-dice-roll",
+  "id": "loaded-dice-roll",
   "title": "Loaded Dice Roll",
   "description": "Loaded your dice rolls!",
   "authors": [
@@ -21,11 +21,10 @@
   "flags": {
     "allowBugReporter": true
   },
-  "version": "2.1.0",
+  "version": "2.2.0",
   "compatibility": {
-    "minimum": "11.0",
-    "verified": "11.325",
-    "maximum": "12"
+    "minimum": "11",
+    "verified": "13"
   },
   "esmodules": ["js/module.js"],
   "styles": ["css/styles.css"],
