@@ -12,11 +12,21 @@ const whisperError = (error) => {
   });
 };
 
-const showDialog = () => {
+const showDialog = async () => {
+  
   if (loadedDialog?.rendered) {
-    loadedDialog.bringToTop();
+    loadedDialog.bringToFront();
   } else {
-    loadedDialog = new LoadedDialog();
+
+    let LoadedDialogV13;
+
+    const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
+    if (v13AndAbove) {
+      const module13  = await import("./moduleV13.js"); // Import for V13 and above
+      LoadedDialogV13 = module13.LoadedDialogV13;
+    }
+
+    loadedDialog = v13AndAbove ? new LoadedDialogV13() : new LoadedDialog();
     loadedDialog.render(true);
   }
 };
@@ -162,32 +172,65 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
-  
+
   if (!game.user.isGM) {
     return;
   }
 
   const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
+  
+  if (v13AndAbove) {
+    return;
+  }
+
+  // Initalize this way if V12 or below
+
   const button = {
     name: "loaded-dice-roll",
     title: localize("loaded-dice-roll.title"),
-    icon: "fas fa-dice",
-    onClick: () => showDialog(),
+    icon: "fas fa-dice",    
+    onClick: async () => await showDialog(), // This method is depreciated in V13 and above
     button: true,
   };
-  let bar;
 
-  if (v13AndAbove) {
-    bar = controls.tokens.tools;
+  let bar = controls.find((c) => c.name === "token");
 
-    if (bar) {
-        bar["loaded-dice-roll"] = button;
-    }
-  } else {
-    bar = controls.find((c) => c.name === "token");
-
-    if (bar) {
-      bar.tools.push(button);
-    }
+  if (bar) {
+    bar.tools.push(button);
   }
 });
+
+Hooks.on("renderSceneControls", () => {
+  
+  console.log("Foundry VTT | Loaded Dice Roll | Rendering Scene Controls");
+
+  const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
+
+  if (!v13AndAbove) {
+    return;
+  }
+
+  // Initalize this way if V13 or above, due to changes in allowed onClick handlers.
+  // This Hook is used because the DOM is not ready when the getSceneControlButtons hook.
+
+  const container = document.querySelector("#scene-controls-tools");
+
+  if (container.querySelector("#loaded-dice-roll")) {
+    return; // Already added
+  }
+
+  const listItemElement = document.createElement("li");
+  const buttonElement = document.createElement("button");
+  buttonElement.name = "loaded-dice-roll";
+  buttonElement.id = "loaded-dice-roll";
+  buttonElement.ariaLabel = localize("loaded-dice-roll.title");
+  buttonElement.type = "button";
+  buttonElement.className = "control ui-control tool icon toggle fas fa-dice";
+  buttonElement.title = localize("loaded-dice-roll");
+  buttonElement.dataset.tool = "loaded-dice-roll";
+  buttonElement.ariaPressed = "false";
+  buttonElement.addEventListener("click", () => showDialog());
+  listItemElement.appendChild(buttonElement);
+  container.appendChild(listItemElement);
+
+})
