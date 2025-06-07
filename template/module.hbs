@@ -1,4 +1,4 @@
-<form>
+<form class="standard-form">
   <div class="form-group">
     <label for="formula">{{localize "loaded-dice-roll.form.formula.title"}}
       <span class="fas fa-question-circle" title="{{localize 'loaded-dice-roll.form.formula.tooltip'}}"></span>
@@ -29,5 +29,5 @@
   {{#if errors.target}}
     <div class="form-error">{{errors.target}}</div>
   {{/if}}
-  <button type="submit" class="btn btn-primary">{{localize "loaded-dice-roll.form.roll-button.title"}}</button>
+  <button data-action="doRoll" type="submit" class="btn btn-primary">{{localize "loaded-dice-roll.form.roll-button.title"}}</button>
 </form>
