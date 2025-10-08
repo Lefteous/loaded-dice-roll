@@ -1,3 +1,4 @@
+const { ApplicationV2, HandlebarsApplicationMixin} = foundry.applications.api;
 import { isTargetValid, parseTarget, generateTargetValue, localize } from "./utils.js";
 import { LoadedRoll } from "./loadedroll.js";
 let loadedDialog = null;
@@ -17,23 +18,37 @@ const showDialog = async () => {
   if (loadedDialog?.rendered) {
     loadedDialog.bringToFront();
   } else {
-
-    let LoadedDialogV13;
-
-    const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
-    if (v13AndAbove) {
-      const module13  = await import("./moduleV13.js"); // Import for V13 and above
-      LoadedDialogV13 = module13.LoadedDialogV13;
-    }
-
-    loadedDialog = v13AndAbove ? new LoadedDialogV13() : new LoadedDialog();
+    loadedDialog = new LoadedDialog();
     loadedDialog.render(true);
   }
 };
 
 /** Dialog **/
 
-export class LoadedDialog extends FormApplication {
+export class LoadedDialog extends HandlebarsApplicationMixin(ApplicationV2) {
+
+  static DEFAULT_OPTIONS = {
+    actions: {
+      doRoll: LoadedDialog.doRoll,
+    },
+    position: {
+      width: 400,
+      height: "auto",
+    },
+    window: {
+      title: "loaded-dice-roll.title",
+      closeOnSubmit: false,
+      submitOnChange: false,
+      submitOnClose: false,
+    }
+  }
+
+  static PARTS = {
+    form: {
+      template: "/modules/loaded-dice-roll/template/module.hbs",
+    }
+  }
+
   constructor() {
     super();
     this.errors = {
@@ -46,37 +61,19 @@ export class LoadedDialog extends FormApplication {
     };
   }
 
-  getData(options) {
-    return mergeObject(super.getData(options), {
+  _prepareContext(options) {
+    return {
       values: this.values,
       errors: this.errors,
-    });
+    };
   }
 
-  static get defaultOptions() {
-    return mergeObject(super.defaultOptions, {
-      title: localize("loaded-dice-roll.title"),
-      template: "/modules/loaded-dice-roll/template/module.hbs",
-      width: 400,
-      height: "auto",
-      closeOnSubmit: false,
-      submitOnChange: false,
-      submitOnClose: false,
-    });
-  }
-
-  async activateListeners(html) {
-    super.activateListeners(html);
-    this.form.addEventListener("button[name='roll']", async () => {
-      this.form.querySelectorAll("div[class*='form-error']").forEach((container) => (container.textContent = ""));
-      await this._onSubmit.bind(this);
-    });
-  }
-
-  async _onSubmit(event) {
+  static async doRoll(event) {
     event.preventDefault();
-    const formula = this.form.querySelector("input[name='formula']").value;
-    const target = this.form.querySelector("input[name='target']").value;
+    document.querySelectorAll("div[class*='form-error']").forEach((container) => (container.textContent = ""));
+
+    const formula = document.querySelector("input[name='formula']").value;
+    const target = document.querySelector("input[name='target']").value;
 
     this.errors = {
       formula: "",
@@ -86,12 +83,15 @@ export class LoadedDialog extends FormApplication {
       formula,
       target,
     };
+
     this.errors = await validateRoll(formula, target);
+
     if (this.errors.formula || this.errors.target) {
       loadedDialog.render(true);
     } else {
       await calculateRoll(formula, parseTarget(target));
     }
+    
   }
 }
 
@@ -171,44 +171,9 @@ Hooks.once("init", () => {
   };
 });
 
-Hooks.on("getSceneControlButtons", (controls) => {
-
-  if (!game.user.isGM) {
-    return;
-  }
-
-  const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
-  
-  if (v13AndAbove) {
-    return;
-  }
-
-  // Initalize this way if V12 or below
-
-  const button = {
-    name: "loaded-dice-roll",
-    title: localize("loaded-dice-roll.title"),
-    icon: "fas fa-dice",    
-    onClick: async () => await showDialog(), // This method is depreciated in V13 and above
-    button: true,
-  };
-
-  let bar = controls.find((c) => c.name === "token");
-
-  if (bar) {
-    bar.tools.push(button);
-  }
-});
-
 Hooks.on("renderSceneControls", () => {
   
   console.log("Foundry VTT | Loaded Dice Roll | Rendering Scene Controls");
-
-  const v13AndAbove = Number.parseInt(game.version.split(".")[0]) >= 13;
-
-  if (!v13AndAbove) {
-    return;
-  }
 
   // Initalize this way if V13 or above, due to changes in allowed onClick handlers.
   // This Hook is used because the DOM is not ready when the getSceneControlButtons hook.
