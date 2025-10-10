@@ -12,7 +12,7 @@ export const loadRoll = (roll) => {
   let diffBy = diff;
 
   // Find all dice terms in the roll
-  const rolledDice = roll.terms.filter((term) => term instanceof Die);
+  const rolledDice = roll.terms.filter((term) => term instanceof foundry.dice.terms.Die);
 
   while (diffBy !== 0) {
     // Select a random die set from the pool.
