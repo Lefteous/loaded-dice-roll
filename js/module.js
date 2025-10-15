@@ -171,31 +171,18 @@ Hooks.once("init", () => {
   };
 });
 
-Hooks.on("renderSceneControls", () => {
-  
-  console.log("Foundry VTT | Loaded Dice Roll | Rendering Scene Controls");
-
-  // Initalize this way if V13 or above, due to changes in allowed onClick handlers.
-  // This Hook is used because the DOM is not ready when the getSceneControlButtons hook.
-
-  const container = document.querySelector("#scene-controls-tools");
-
-  if (container.querySelector("#loaded-dice-roll")) {
-    return; // Already added
+Hooks.on("getSceneControlButtons", (controls) => {
+  if (!game.user.isGM) {
+    return;
   }
 
-  const listItemElement = document.createElement("li");
-  const buttonElement = document.createElement("button");
-  buttonElement.name = "loaded-dice-roll";
-  buttonElement.id = "loaded-dice-roll";
-  buttonElement.ariaLabel = localize("loaded-dice-roll.title");
-  buttonElement.type = "button";
-  buttonElement.className = "control ui-control tool icon toggle fas fa-dice";
-  buttonElement.title = localize("loaded-dice-roll");
-  buttonElement.dataset.tool = "loaded-dice-roll";
-  buttonElement.ariaPressed = "false";
-  buttonElement.addEventListener("click", () => showDialog());
-  listItemElement.appendChild(buttonElement);
-  container.appendChild(listItemElement);
+  const button = {
+    name: "loaded-dice-roll",
+    title: localize("loaded-dice-roll.title"),
+    icon: "fas fa-dice",
+    onClick: () => showDialog(),
+    button: true,
+  };
 
-})
+  controls.tokens.tools["loaded-dice-roll"] = button;
+});
