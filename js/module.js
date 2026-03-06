@@ -14,7 +14,9 @@ const whisperError = (error) => {
 };
 
 const showDialog = async () => {
-  
+  if (!game.user?.isGM) {
+    return;
+  }
   if (loadedDialog?.rendered) {
     loadedDialog.bringToFront();
   } else {
@@ -133,6 +135,9 @@ const validateRoll = async (formula, target) => {
 };
 
 const calculateRoll = async (formula, parsedTarget) => {
+  if (!game.user?.isGM) {
+    return;
+  }
   const target = await generateTargetValue(formula, parsedTarget);
   const dice = new LoadedRoll(formula, target);
   await dice.evaluate();
@@ -172,17 +177,12 @@ Hooks.once("init", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
-  if (!game.user.isGM) {
-    return;
-  }
-
-  const button = {
+  controls.tokens.tools["loaded-dice-roll"] = {
     name: "loaded-dice-roll",
     title: localize("loaded-dice-roll.title"),
     icon: "fas fa-dice",
     onClick: () => showDialog(),
     button: true,
+    visible: game.user.isGM,
   };
-
-  controls.tokens.tools["loaded-dice-roll"] = button;
 });
