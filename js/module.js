@@ -21,7 +21,7 @@ const showDialog = async () => {
     loadedDialog.bringToFront();
   } else {
     loadedDialog = new LoadedDialog();
-    loadedDialog.render(true);
+    loadedDialog.render({ force: true });
   }
 };
 
@@ -89,7 +89,7 @@ export class LoadedDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     this.errors = await validateRoll(formula, target);
 
     if (this.errors.formula || this.errors.target) {
-      loadedDialog.render(true);
+      loadedDialog.render({ force: true });
     } else {
       await calculateRoll(formula, parseTarget(target));
     }
@@ -141,14 +141,9 @@ const calculateRoll = async (formula, parsedTarget) => {
   const target = await generateTargetValue(formula, parsedTarget);
   const dice = new LoadedRoll(formula, target);
   await dice.evaluate();
-  dice.toMessage(
-    {
-      speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
-    },
-    {
-      rollMode: game.settings.get("core", "rollMode"),
-    },
-  );
+  await dice.toMessage({
+    speaker: ChatMessage.getSpeaker({ actor: game.user.character }),
+  });
   if (loadedDialog?.rendered) {
     loadedDialog.close();
   }
@@ -181,7 +176,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     name: "loaded-dice-roll",
     title: localize("loaded-dice-roll.title"),
     icon: "fas fa-dice",
-    onClick: () => showDialog(),
+    onChange: () => showDialog(),
     button: true,
     visible: game.user.isGM,
   };
